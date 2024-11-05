@@ -38,7 +38,7 @@ namespace assign3
             
             neuron_t& update(const std::vector<Scalar>& new_data, const topology_function_t* basis_func, Scalar eta, Scalar r);
             
-            static Scalar distance(const neuron_t& n1, const neuron_t& n2);
+            static Scalar distance(const neuron_t& n1, const neuron_t& n2, Scalar time_ratio);
             
             [[nodiscard]] inline const std::vector<Scalar>& get_data() const
             { return data; }

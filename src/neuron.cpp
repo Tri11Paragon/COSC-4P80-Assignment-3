@@ -51,10 +51,10 @@ namespace assign3
         return std::sqrt(dist);
     }
     
-    Scalar neuron_t::distance(const neuron_t& n1, const neuron_t& n2)
+    Scalar neuron_t::distance(const neuron_t& n1, const neuron_t& n2, Scalar time_ratio)
     {
-        auto dx = n1.x_pos - n2.x_pos;
-        auto dy = n1.y_pos - n2.y_pos;
-        return std::sqrt(dx * dx + dy * dy);
+        auto dist = n1.dist(n2.data);
+        auto dist_sq = dist * dist;
+        return std::exp(-time_ratio * dist_sq);
     }
 }
