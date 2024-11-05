@@ -1,10 +1,14 @@
 #include <iostream>
 #include <blt/std/logging.h>
+#include <blt/parse/argparse.h>
 #include <blt/gfx/window.h>
 #include "blt/gfx/renderer/resource_manager.h"
 #include "blt/gfx/renderer/batch_2d_renderer.h"
 #include "blt/gfx/renderer/camera.h"
+#include <assign3/file.h>
 #include <imgui.h>
+
+std::vector<assign3::data_file_t> files;
 
 blt::gfx::matrix_state_manager global_matrices;
 blt::gfx::resource_manager resources;
@@ -41,7 +45,15 @@ void destroy(const blt::gfx::window_data&)
     BLT_INFO("Goodbye World!");
 }
 
-int main()
+int main(int argc, const char** argv)
 {
+    blt::arg_parse parser{};
+    
+    parser.addArgument(blt::arg_builder{"--file", "-f"}.setDefault("../data").setHelp("Path to data files").build());
+    
+    auto args = parser.parse_args(argc, argv);
+    
+    files = assign3::data_file_t::load_data_files_from_path(args.get<std::string>("file"));
+    
     blt::gfx::init(blt::gfx::window_data{"My Sexy Window", init, update, destroy}.setSyncInterval(1));
 }

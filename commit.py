@@ -24,8 +24,8 @@ USER_HOME = Path.home()
 ENVIRONMENT_DATA_LOCATION = USER_HOME / ".brett_scripts.env"
 
 if sys.platform.startswith("win"):
-	CONFIG_FILE_DIRECTORY = Path(os.getenv('APPDATA') + "\BLT")
-	CONFIG_FILE_LOCATION = Path(CONFIG_FILE_DIRECTORY + "\commit_config.env")
+	CONFIG_FILE_DIRECTORY = Path(os.getenv('APPDATA') + "\blt")
+	CONFIG_FILE_LOCATION = Path(CONFIG_FILE_DIRECTORY + "\commit_config.json")
 else:
 	XDG_CONFIG_HOME = os.environ.get('XDG_CONFIG_HOME')
 	if XDG_CONFIG_HOME is None:
@@ -36,7 +36,7 @@ else:
 	if len(str(XDG_CONFIG_HOME)) == 0:
 		XDG_CONFIG_HOME = USER_HOME
 	CONFIG_FILE_DIRECTORY = XDG_CONFIG_HOME / "blt"
-	CONFIG_FILE_LOCATION = CONFIG_FILE_DIRECTORY / "commit_config.env"
+	CONFIG_FILE_LOCATION = CONFIG_FILE_DIRECTORY / "commit_config.json"
 
 class Config:
 	def __init__(self):
@@ -44,7 +44,7 @@ class Config:
 		self.branch_on_major = True
 		self.branch_on_minor = False
 		self.release_on_major = True
-		self.release_on_minor = False
+		self.release_on_minor = True
 		self.main_branch = "main"
 		self.patch_limit = -1
 	
@@ -56,6 +56,8 @@ class Config:
 			j = json.load(f)
 			obj = Config()
 			[setattr(obj, key, val) for key, val in j.items() if hasattr(obj, key)]
+			if obj.branch_on_minor:
+				obj.branch_on_major = True
 			return obj
 
 	def from_file(file):
@@ -169,6 +171,12 @@ def make_branch(config: Config, name):
 	subprocess.call(["git", "checkout", "-b", name])
 	subprocess.call(["git", "merge", config.main_branch])
 	subprocess.call(["git", "checkout", config.main_branch])
+ 
+def sync_branch(config: Config, version_parts, args):
+    if config.branch_on_major:
+        # Branch will be created.
+        if args.minor:
+            return;
 
 def make_release(env: EnvData, name):
 	print(f"Making new release {name}")
@@ -176,7 +184,7 @@ def make_release(env: EnvData, name):
 	urls = []
 	for line in repos_v:
 		origin = ''.join(itertools.takewhile(str.isalpha, line.decode('utf8')))
-		urls.append("https://api.github.com/repos/" + open_process(["git", "remote", "get-url", origin], False)[0].decode('utf8').replace("\n", "").replace("https://github.com/", "") + "/releases")
+		urls.append(open_process(["git", "remote", "get-url", origin], False)[0].decode('utf8').replace("\n", "").replace(".git", "").replace("https://github.com/", "https://api.github.com/repos/") + "/releases")
 	urls = set(urls)
 	data = {
 		'tag_name': name,
@@ -191,6 +199,8 @@ def make_release(env: EnvData, name):
 		'X-GitHub-Api-Version': '2022-11-28'
 	}
 	for url in urls:
+		if not "github" in url:
+			return
 		response = requests.post(url, headers=headers, data=json.dumps(data))
 		if response.status_code == 201:
 			print('Release created successfully!')
@@ -212,9 +222,16 @@ def main():
 	parser.add_argument("-M", "--major", action='store_true', default=False, required=False)
 	parser.add_argument('-e', "--env", help="environment file", required=False, default=None)
 	parser.add_argument('-c', "--config", help="config file", required=False, default=None)
-	parser.add_argument("--create_default_config", action="store_true", default=False, required=False)
+	parser.add_argument("--create-default-config", action="store_true", default=False, required=False)
+	parser.add_argument("--no-release", action="store_true", default=False, required=False)
+	parser.add_argument("--no-branch", action="store_true", default=False, required=False)
 	
 	args = parser.parse_args()
+ 
+	if args.create_default_config:
+		config = Config()
+		config.save_to_file(args.config if args.config is not None else CONFIG_FILE_LOCATION)
+		return
  
 	if args.env is not None:
 		env = EnvData.get_env_from_file(args.e)
@@ -225,9 +242,6 @@ def main():
 		config = Config.from_file(args.config)
 	else:
 		config = Config.from_file(CONFIG_FILE_LOCATION)
-  
-	if args.create_default_config:
-		config.save_to_file(args.config if args.config is not None else CONFIG_FILE_LOCATION)
 	
 	cmake_text = load_cmake()
 	cmake_version = get_version(cmake_text)[0]
@@ -267,18 +281,37 @@ def main():
 	version_parts = split_version(cmake_text)[0]
 	if args.major:
 		if config.branch_on_major:
-			make_branch(config, "v" + str(version_parts[0]))
+			if not args.no_branch:
+				make_branch(config, "v" + str(version_parts[0]))
+	
 	if args.minor:
 		if config.branch_on_minor:
-			make_branch(config, "v" + str(version_parts[0]) + "." + str(version_parts[1]))
+			if not args.no_branch:
+				make_branch(config, "v" + str(version_parts[0]) + "." + str(version_parts[1]))
+		elif config.branch_on_major:
+			subprocess.call(["git", "checkout", "v" + str(version_parts[0])])
+			subprocess.call(["git", "rebase", config.main_branch])
+			subprocess.call(["git", "checkout", config.main_branch])
+
+	if args.patch:
+		if config.branch_on_minor:
+			subprocess.call(["git", "checkout", "v" + str(version_parts[0]) + "." + str(version_parts[1])])
+			subprocess.call(["git", "rebase", config.main_branch])
+			subprocess.call(["git", "checkout", config.main_branch])
+		elif config.branch_on_major:
+			subprocess.call(["git", "checkout", "v" + str(version_parts[0])])
+			subprocess.call(["git", "rebase", config.main_branch])
+			subprocess.call(["git", "checkout", config.main_branch])
+  
+	sync_branch(config=config, version_parts=version_parts, args=args)
 		
 	subprocess.call(["sh", "-c", "git remote | xargs -L1 git push --all"])
  
 	if args.major:
-		if config.release_on_major:
+		if not args.no_release and config.release_on_major:
 			make_release(env, "v" + str(version_parts[0]))
 	if args.minor:
-		if config.release_on_minor:
+		if not args.no_release and config.release_on_minor:
 			make_release(env, "v" + str(version_parts[0]) + "." + str(version_parts[1]))
   
 if __name__ == "__main__":

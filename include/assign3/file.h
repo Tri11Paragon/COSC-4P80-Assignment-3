@@ -24,10 +24,10 @@
 #include <string>
 #include <string_view>
 #include "blt/std/assert.h"
+#include <assign3/fwdecl.h>
 
 namespace assign3
 {
-    using Scalar = float;
     
     struct data_t
     {
