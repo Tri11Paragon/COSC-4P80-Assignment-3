@@ -33,7 +33,7 @@ namespace assign3
             {
                 for (blt::size_t i = 0; i < width; i++)
                     for (blt::size_t j = 0; j < height; j++)
-                        map.emplace_back(dimensions, i, j);
+                        map.emplace_back(dimensions, (j % 2 == 0 ? static_cast<Scalar>(i) : static_cast<Scalar>(i) + 0.5f), j);
             }
             
             inline neuron_t& get(blt::size_t x, blt::size_t y)

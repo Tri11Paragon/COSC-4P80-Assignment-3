@@ -19,6 +19,7 @@
 #include <blt/std/random.h>
 #include <blt/iterator/iterator.h>
 #include <cmath>
+#include "blt/std/logging.h"
 
 namespace assign3
 {
@@ -37,8 +38,8 @@ namespace assign3
         static thread_local std::vector<Scalar> diff;
         diff.clear();
         
-        for (auto [x, v] : blt::in_pairs(new_data, data))
-            diff.push_back(v - x);
+        for (auto [v, x] : blt::in_pairs(data, new_data))
+            diff.push_back(x - v);
         
         for (auto [v, d] : blt::in_pairs(data, diff))
             v += eta * dist * d;

@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <blt/std/random.h>
 #include <blt/iterator/enumerate.h>
+#include <blt/std/logging.h>
 
 namespace assign3
 {

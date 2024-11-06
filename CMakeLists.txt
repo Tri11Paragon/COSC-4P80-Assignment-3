@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.25)
-project(COSC-4P80-Assignment-3 VERSION 0.0.7)
+project(COSC-4P80-Assignment-3 VERSION 0.0.8)
+include(FetchContent)
 
 option(ENABLE_ADDRSAN "Enable the address sanitizer" OFF)
 option(ENABLE_UBSAN "Enable the ub sanitizer" OFF)
@@ -7,12 +8,20 @@ option(ENABLE_TSAN "Enable the thread data race sanitizer" OFF)
 
 set(CMAKE_CXX_STANDARD 17)
 
+FetchContent_Declare(implot
+        GIT_REPOSITORY https://github.com/epezent/implot
+        GIT_TAG 419a8a0f5fcb77e1e7c19ab540441686bfe21bca
+        FIND_PACKAGE_ARGS)
+FetchContent_MakeAvailable(implot)
+
 add_subdirectory(lib/blt-with-graphics)
 
 include_directories(include/)
+include_directories(${implot_SOURCE_DIR})
 file(GLOB_RECURSE PROJECT_BUILD_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
+file(GLOB IM_PLOT_FILES "${implot_SOURCE_DIR}/*.cpp")
 
-add_executable(COSC-4P80-Assignment-3 ${PROJECT_BUILD_FILES})
+add_executable(COSC-4P80-Assignment-3 ${PROJECT_BUILD_FILES} ${IM_PLOT_FILES})
 
 target_compile_options(COSC-4P80-Assignment-3 PRIVATE -Wall -Wextra -Wpedantic -Wno-comment)
 target_link_options(COSC-4P80-Assignment-3 PRIVATE -Wall -Wextra -Wpedantic -Wno-comment)

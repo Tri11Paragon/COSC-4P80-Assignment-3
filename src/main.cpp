@@ -19,6 +19,11 @@ blt::gfx::resource_manager resources;
 blt::gfx::batch_renderer_2d renderer_2d(resources, global_matrices);
 blt::gfx::first_person_camera_2d camera;
 
+blt::size_t som_width = 7;
+blt::size_t som_height = 7;
+blt::size_t max_epochs = 100;
+Scalar initial_learn_rate = 0.1;
+
 void init(const blt::gfx::window_data&)
 {
     using namespace blt::gfx;
@@ -28,10 +33,9 @@ void init(const blt::gfx::window_data&)
     resources.load_resources();
     renderer_2d.create();
     
-    blt::size_t size = 5;
     som = std::make_unique<som_t>(
             *std::find_if(files.begin(), files.end(), [](const data_file_t& v) { return v.data_points.begin()->bins.size() == 32; }),
-            size, size, 100);
+            som_width, som_height, max_epochs);
 }
 
 void update(const blt::gfx::window_data& data)
@@ -45,47 +49,51 @@ void update(const blt::gfx::window_data& data)
     
     if (ImGui::Begin("Controls"))
     {
-        ImGui::Button("Run Epoch");
-        if (ImGui::IsItemClicked())
+        if (ImGui::Button("Run Epoch"))
         {
             static gaussian_function_t func;
-            som->train_epoch(0.1, &func);
+            som->train_epoch(initial_learn_rate, &func);
         }
+        static bool run;
+        ImGui::Checkbox("Run to completion", &run);
+        if (run)
+        {
+            static gaussian_function_t func;
+            if (som->get_current_epoch() < som->get_max_epochs())
+                som->train_epoch(initial_learn_rate, &func);
+        }
+        ImGui::Text("Epoch %ld / %ld", som->get_current_epoch(), som->get_max_epochs());
     }
     ImGui::End();
     
+    static std::vector<blt::i64> activations;
+    
+    activations.clear();
+    activations.resize(som->get_array().get_map().size());
+    
     auto& meow = *std::find_if(files.begin(), files.end(), [](const data_file_t& v) { return v.data_points.begin()->bins.size() == 32; });
-    for (auto& v : som->get_array().get_map())
+    for (auto& v : meow.data_points)
+    {
+        auto nearest = som->get_closest_neuron(v.bins);
+        activations[nearest] += v.is_bad ? -1 : 1;
+    }
+    
+    blt::i64 max = *std::max_element(activations.begin(), activations.end());
+    blt::i64 min = *std::min_element(activations.begin(), activations.end());
+    
+    for (auto [i, v] : blt::enumerate(som->get_array().get_map()))
     {
         float scale = 35;
         
-        float total_good_distance = 0;
-        float total_bad_distance = 0;
-        float total_goods = 0;
-        float total_bads = 0;
+        auto activation = activations[i];
         
-        for (auto& point : meow.data_points)
-        {
-            auto dist = v.dist(point.bins);
-            if (point.is_bad)
-            {
-                total_bads++;
-                total_bad_distance += dist;
-            } else
-            {
-                total_goods++;
-                total_good_distance += dist;
-            }
-        }
+        blt::vec4 color = blt::make_color(1,1,1);
+        if (activation > 0)
+            color = blt::make_color(0, static_cast<Scalar>(activation) / static_cast<Scalar>(max), 0);
+        else if (activation < 0)
+            color = blt::make_color(std::abs(static_cast<Scalar>(activation) / static_cast<Scalar>(min)), 0, 0);
         
-        float good_ratio = total_goods > 0 ? total_good_distance / total_goods : 0;
-        float bad_ratio = total_bads > 0 ? total_bad_distance / total_bads : 0;
-        float good_to_bad = total_good_distance / total_bad_distance;
-        
-        BLT_TRACE("%f %f %f", good_ratio, bad_ratio, good_to_bad);
-        
-        renderer_2d.drawPointInternal(blt::make_color(good_ratio, bad_ratio, good_to_bad),
-                                      point2d_t{v.get_x() * scale + scale, v.get_y() * scale + scale, scale});
+        renderer_2d.drawPointInternal(color, point2d_t{v.get_x() * scale + scale, v.get_y() * scale + scale, scale});
     }
     
     renderer_2d.render(data.width, data.height);
