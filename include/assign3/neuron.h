@@ -36,9 +36,11 @@ namespace assign3
             
             neuron_t& randomize(blt::size_t seed);
             
-            neuron_t& update(const std::vector<Scalar>& new_data, const topology_function_t* basis_func, Scalar eta, Scalar r);
+            neuron_t& update(const std::vector<Scalar>& new_data, Scalar dist, Scalar eta);
             
-            static Scalar distance(const neuron_t& n1, const neuron_t& n2, Scalar time_ratio);
+            static Scalar distance(const neuron_t& n1, const neuron_t& n2);
+            
+            [[nodiscard]] Scalar dist(const std::vector<Scalar>& X) const;
             
             [[nodiscard]] inline const std::vector<Scalar>& get_data() const
             { return data; }
@@ -48,9 +50,8 @@ namespace assign3
             
             [[nodiscard]] inline Scalar get_y() const
             { return y_pos; }
-        private:
-            [[nodiscard]] Scalar dist(const std::vector<Scalar>& X) const;
             
+        private:
             Scalar x_pos, y_pos;
             std::vector<Scalar> data;
     };

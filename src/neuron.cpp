@@ -32,11 +32,17 @@ namespace assign3
         return *this;
     }
     
-    neuron_t& neuron_t::update(const std::vector<Scalar>& new_data, const topology_function_t* basis_func, Scalar eta, Scalar r)
+    neuron_t& neuron_t::update(const std::vector<Scalar>& new_data, Scalar dist, Scalar eta)
     {
-        auto d = dist(new_data);
-        for (auto& v : data)
-            v = eta * basis_func->call(d, r);
+        static thread_local std::vector<Scalar> diff;
+        diff.clear();
+        
+        for (auto [x, v] : blt::in_pairs(new_data, data))
+            diff.push_back(v - x);
+        
+        for (auto [v, d] : blt::in_pairs(data, diff))
+            v += eta * dist * d;
+        
         return *this;
     }
     
@@ -51,10 +57,10 @@ namespace assign3
         return std::sqrt(dist);
     }
     
-    Scalar neuron_t::distance(const neuron_t& n1, const neuron_t& n2, Scalar time_ratio)
+    Scalar neuron_t::distance(const neuron_t& n1, const neuron_t& n2)
     {
-        auto dist = n1.dist(n2.data);
-        auto dist_sq = dist * dist;
-        return std::exp(-time_ratio * dist_sq);
+        auto dx = n1.get_x() - n2.get_x();
+        auto dy = n1.get_y() - n2.get_y();
+        return std::sqrt(dx * dx + dy * dy);
     }
 }

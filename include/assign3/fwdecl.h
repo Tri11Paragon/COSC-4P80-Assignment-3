@@ -22,6 +22,11 @@
 namespace assign3
 {
     using Scalar = float;
+    
+    enum class shape
+    {
+        GRID, HONEYCOMB
+    };
 }
 
 #endif //COSC_4P80_ASSIGNMENT_3_FWDECL_H

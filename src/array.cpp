@@ -1,5 +1,5 @@
-#pragma once
 /*
+ *  <Short Description>
  *  Copyright (C) 2024  Brett Terpstra
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -15,30 +15,29 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-#ifndef COSC_4P80_ASSIGNMENT_3_FUNCTIONS_H
-#define COSC_4P80_ASSIGNMENT_3_FUNCTIONS_H
-
-#include <assign3/fwdecl.h>
+#include <assign3/array.h>
+#include <cmath>
 
 namespace assign3
 {
     
-    struct topology_function_t
+    blt::i64 array_t::wrap_height(blt::i64 y) const
     {
-        /**
-         * @param dist input - usually the distance
-         * @param r time ratio - t / max_t
-         * @return basis results
-         */
-        [[nodiscard]] virtual Scalar call(Scalar dist, Scalar r) const = 0;
-    };
+        if (y >= height)
+            return y - height;
+        else if (y < 0)
+            return height + y;
+        else
+            return y;
+    }
     
-    struct gaussian_function_t : public topology_function_t
+    blt::i64 array_t::wrap_width(blt::i64 x) const
     {
-        [[nodiscard]] Scalar call(Scalar dist, Scalar r) const final;
-    };
-    
+        if (x >= width)
+            return x - width;
+        else if (x < 0)
+            return width + x;
+        else
+            return x;
+    }
 }
-
-#endif //COSC_4P80_ASSIGNMENT_3_FUNCTIONS_H
