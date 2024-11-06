@@ -54,10 +54,38 @@ void update(const blt::gfx::window_data& data)
     }
     ImGui::End();
     
+    auto& meow = *std::find_if(files.begin(), files.end(), [](const data_file_t& v) { return v.data_points.begin()->bins.size() == 32; });
     for (auto& v : som->get_array().get_map())
     {
         float scale = 35;
-        renderer_2d.drawPointInternal(blt::make_color(1, 0, 0), point2d_t{v.get_x() * scale + scale, v.get_y() * scale + scale, scale});
+        
+        float total_good_distance = 0;
+        float total_bad_distance = 0;
+        float total_goods = 0;
+        float total_bads = 0;
+        
+        for (auto& point : meow.data_points)
+        {
+            auto dist = v.dist(point.bins);
+            if (point.is_bad)
+            {
+                total_bads++;
+                total_bad_distance += dist;
+            } else
+            {
+                total_goods++;
+                total_good_distance += dist;
+            }
+        }
+        
+        float good_ratio = total_goods > 0 ? total_good_distance / total_goods : 0;
+        float bad_ratio = total_bads > 0 ? total_bad_distance / total_bads : 0;
+        float good_to_bad = total_good_distance / total_bad_distance;
+        
+        BLT_TRACE("%f %f %f", good_ratio, bad_ratio, good_to_bad);
+        
+        renderer_2d.drawPointInternal(blt::make_color(good_ratio, bad_ratio, good_to_bad),
+                                      point2d_t{v.get_x() * scale + scale, v.get_y() * scale + scale, scale});
     }
     
     renderer_2d.render(data.width, data.height);
