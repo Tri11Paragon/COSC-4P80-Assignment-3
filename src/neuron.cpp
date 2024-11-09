@@ -49,19 +49,13 @@ namespace assign3
     
     Scalar neuron_t::dist(const std::vector<Scalar>& X) const
     {
-        Scalar dist = 0;
-        for (auto [v, x] : blt::zip(data, X))
-        {
-            auto loc = (v - x);
-            dist += loc * loc;
-        }
-        return std::sqrt(dist);
+        euclidean_distance_function_t dist_func;
+        return dist_func.distance(data, X);
     }
     
     Scalar neuron_t::distance(const neuron_t& n1, const neuron_t& n2)
     {
-        auto dx = n1.get_x() - n2.get_x();
-        auto dy = n1.get_y() - n2.get_y();
-        return std::sqrt(dx * dx + dy * dy);
+        euclidean_distance_function_t dist_func;
+        return dist_func.distance({n1.get_x(), n1.get_y()}, {n2.get_x(), n2.get_y()});
     }
 }

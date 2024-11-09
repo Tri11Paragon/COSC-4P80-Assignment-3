@@ -1,5 +1,5 @@
+#pragma once
 /*
- *  <Short Description>
  *  Copyright (C) 2024  Brett Terpstra
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -15,27 +15,12 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include <assign3/functions.h>
-#include <cmath>
-#include "blt/iterator/zip.h"
 
-namespace assign3
-{
-    
-    Scalar gaussian_function_t::call(Scalar dist, Scalar r) const
-    {
-        auto dist_sq = dist * dist;
-        return std::exp(-r * dist_sq);
-    }
-    
-    Scalar euclidean_distance_function_t::distance(blt::span<const Scalar> x, blt::span<const Scalar> y) const
-    {
-        Scalar dist = 0;
-        for (auto [a, b] : blt::in_pairs(x, y))
-        {
-            auto d = a - b;
-            dist += d * d;
-        }
-        return std::sqrt(dist);
-    }
+#ifndef COSC_4P80_ASSIGNMENT_3_UI_H
+#define COSC_4P80_ASSIGNMENT_3_UI_H
+
+namespace assign3 {
+
 }
+
+#endif //COSC_4P80_ASSIGNMENT_3_UI_H

@@ -20,6 +20,7 @@
 #define COSC_4P80_ASSIGNMENT_3_FUNCTIONS_H
 
 #include <assign3/fwdecl.h>
+#include <blt/std/ranges.h>
 
 namespace assign3
 {
@@ -37,6 +38,16 @@ namespace assign3
     struct gaussian_function_t : public topology_function_t
     {
         [[nodiscard]] Scalar call(Scalar dist, Scalar r) const final;
+    };
+    
+    struct distance_function_t
+    {
+        [[nodiscard]] virtual Scalar distance(blt::span<const Scalar> x, blt::span<const Scalar> y) const = 0;
+    };
+    
+    struct euclidean_distance_function_t : public distance_function_t
+    {
+        [[nodiscard]] Scalar distance(blt::span<const Scalar> x, blt::span<const Scalar> y) const final;
     };
     
 }
