@@ -36,28 +36,33 @@ namespace assign3
                         map.emplace_back(dimensions, (j % 2 == 0 ? static_cast<Scalar>(i) : static_cast<Scalar>(i) + 0.5f), j);
             }
             
-            inline neuron_t& get(blt::size_t x, blt::size_t y)
+            [[nodiscard]] std::pair<blt::size_t, blt::size_t> from_index(blt::size_t index) const
+            {
+                return {index % width, index / width};
+            }
+            
+            neuron_t& get(blt::size_t x, blt::size_t y)
             { return map[y * width + x]; }
             
-            [[nodiscard]] inline const neuron_t& get(blt::size_t x, blt::size_t y) const
+            [[nodiscard]] const neuron_t& get(blt::size_t x, blt::size_t y) const
             { return map[y * width + x]; }
             
-            [[nodiscard]] inline blt::size_t get_width() const
+            [[nodiscard]] blt::size_t get_width() const
             { return width; }
             
-            [[nodiscard]] inline blt::size_t get_height() const
+            [[nodiscard]] blt::size_t get_height() const
             { return height; }
             
-            [[nodiscard]] inline std::vector<neuron_t>& get_map()
+            [[nodiscard]] std::vector<neuron_t>& get_map()
             { return map; }
             
-            [[nodiscard]] inline const std::vector<neuron_t>& get_map() const
+            [[nodiscard]] const std::vector<neuron_t>& get_map() const
             { return map; }
         
         private:
-            [[nodiscard]] inline blt::i64 wrap_width(blt::i64 x) const;
+            [[nodiscard]] blt::i64 wrap_width(blt::i64 x) const;
             
-            [[nodiscard]] inline blt::i64 wrap_height(blt::i64 y) const;
+            [[nodiscard]] blt::i64 wrap_height(blt::i64 y) const;
         
         private:
             blt::i64 width, height;

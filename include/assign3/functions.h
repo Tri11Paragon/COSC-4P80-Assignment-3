@@ -33,16 +33,31 @@ namespace assign3
          * @return basis results
          */
         [[nodiscard]] virtual Scalar call(Scalar dist, Scalar r) const = 0;
+        
+        /**
+         * produces a non-time scaled r value for making the function activate at target_strength when a point is half_distance between two nodes
+         * so for the example of unit distance 1, half distance is 0.5, target_strength is 0.5
+         * this function will produce a value which can be time scaled for achieving this result at t=0
+         *
+         * this function can return a 1 to indicate this function doesn't care for this.
+         */
+        [[nodiscard]] virtual Scalar scale(Scalar half_distance, Scalar target_strength) const = 0;
+        
+        virtual ~topology_function_t() = default;
     };
     
-    struct gaussian_function_t : public topology_function_t
+    struct gaussian_function_t final : public topology_function_t
     {
         [[nodiscard]] Scalar call(Scalar dist, Scalar r) const final;
+        
+        [[nodiscard]] Scalar scale(Scalar half_distance, Scalar target_strength) const final;
     };
     
     struct distance_function_t
     {
         [[nodiscard]] virtual Scalar distance(blt::span<const Scalar> x, blt::span<const Scalar> y) const = 0;
+        
+        virtual ~distance_function_t() = default;
     };
     
     struct euclidean_distance_function_t : public distance_function_t

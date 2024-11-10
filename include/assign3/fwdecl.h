@@ -19,13 +19,24 @@
 #ifndef COSC_4P80_ASSIGNMENT_3_FWDECL_H
 #define COSC_4P80_ASSIGNMENT_3_FWDECL_H
 
+#include <blt/std/types.h>
+
 namespace assign3
 {
     using Scalar = float;
     
-    enum class shape
+    inline constexpr blt::i32 RENDER_2D = 0x0;
+    inline constexpr blt::i32 RENDER_3D = 0x1;
+    
+    enum class shape : blt::i32
     {
-        GRID, HONEYCOMB
+        GRID = RENDER_2D,
+        GRID_WRAP = RENDER_2D,
+        GRID_OFFSET = RENDER_2D,
+        GRID_OFFSET_WRAP = RENDER_2D,
+        GAUSSIAN_DIST = RENDER_2D,
+        TOROIDAL = RENDER_3D,
+        CYLINDER = RENDER_3D
     };
 }
 

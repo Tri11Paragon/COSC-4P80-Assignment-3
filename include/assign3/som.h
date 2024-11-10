@@ -33,6 +33,8 @@ namespace assign3
             
             blt::size_t get_closest_neuron(const std::vector<Scalar>& data);
             
+            Scalar find_closest_neighbour_distance(blt::size_t v0);
+            
             void train_epoch(Scalar initial_learn_rate, topology_function_t* basis_func);
             
             [[nodiscard]] const array_t& get_array() const

@@ -28,6 +28,11 @@ namespace assign3
         return std::exp(-r * dist_sq);
     }
     
+    Scalar gaussian_function_t::scale(Scalar half_distance, Scalar target_strength) const
+    {
+        return -std::log(target_strength) / (half_distance * half_distance);
+    }
+    
     Scalar euclidean_distance_function_t::distance(blt::span<const Scalar> x, blt::span<const Scalar> y) const
     {
         Scalar dist = 0;

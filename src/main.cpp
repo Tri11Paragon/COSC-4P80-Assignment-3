@@ -8,6 +8,7 @@
 #include <assign3/file.h>
 #include <assign3/som.h>
 #include <imgui.h>
+#include <execution>
 
 using namespace assign3;
 
@@ -19,17 +20,38 @@ blt::gfx::resource_manager resources;
 blt::gfx::batch_renderer_2d renderer_2d(resources, global_matrices);
 blt::gfx::first_person_camera_2d camera;
 
-blt::size_t som_width = 7;
-blt::size_t som_height = 7;
-blt::size_t max_epochs = 1000;
+blt::size_t som_width = 5;
+blt::size_t som_height = 5;
+blt::size_t max_epochs = 100;
 Scalar initial_learn_rate = 0.1;
 
 int currently_selected_network = 0;
 std::vector<std::string> map_files_names;
+std::unique_ptr<topology_function_t> topology_function;
 
 float neuron_scale = 35;
-float draw_width = neuron_scale * static_cast<float>(som_width);
-float draw_height = neuron_scale * static_cast<float>(som_height);
+float draw_width;
+float draw_height;
+
+void update_graphics()
+{
+    // find the min x / y for the currently drawn som as positions may depend on type.
+    const auto x_comparator = [](const auto& a, const auto& b) {
+        return a.get_x() < b.get_x();
+    };
+    const auto y_comparator = [](const auto& a, const auto& b) {
+        return a.get_y() < b.get_y();
+    };
+    const auto& som_neurons = som->get_array().get_map();
+    auto min_x = std::min_element(som_neurons.begin(), som_neurons.end(), x_comparator)->get_x();
+    auto max_x = std::max_element(som_neurons.begin(), som_neurons.end(), x_comparator)->get_x();
+    auto min_y = std::min_element(som_neurons.begin(), som_neurons.end(), y_comparator)->get_y();
+    auto max_y = std::max_element(som_neurons.begin(), som_neurons.end(), y_comparator)->get_y();
+    draw_width = (max_x - min_x) * neuron_scale;
+    draw_height = (max_y - min_y) * neuron_scale;
+    
+    topology_function = std::make_unique<gaussian_function_t>();
+}
 
 void generate_network(int selection)
 {
@@ -65,6 +87,8 @@ void update(const blt::gfx::window_data& window_data)
     camera.update_view(global_matrices);
     global_matrices.update();
     
+    update_graphics();
+    
     if (ImGui::Begin("Controls"))
     {
         ImGui::Text("Network Select");
@@ -73,16 +97,14 @@ void update(const blt::gfx::window_data& window_data)
         
         if (ImGui::Button("Run Epoch"))
         {
-            static gaussian_function_t func;
-            som->train_epoch(initial_learn_rate, &func);
+            som->train_epoch(initial_learn_rate, topology_function.get());
         }
         static bool run;
         ImGui::Checkbox("Run to completion", &run);
         if (run)
         {
-            static gaussian_function_t func;
             if (som->get_current_epoch() < som->get_max_epochs())
-                som->train_epoch(initial_learn_rate, &func);
+                som->train_epoch(initial_learn_rate, topology_function.get());
         }
         ImGui::Text("Epoch %ld / %ld", som->get_current_epoch(), som->get_max_epochs());
     }
@@ -156,6 +178,47 @@ void update(const blt::gfx::window_data& window_data)
                                                 v.get_y() * neuron_scale + neuron_scale, neuron_scale});
     }
     
+    closest_type.clear();
+    closest_type.resize(som->get_array().get_map().size());
+    for (auto [i, v] : blt::enumerate(som->get_array().get_map()))
+    {
+        auto half = som->find_closest_neighbour_distance(i);
+        auto scale = topology_function->scale(half * 0.5f, 0.5);
+        for (const auto& data : current_data_file.data_points)
+        {
+            auto dist = v.dist(data.bins);
+            auto ds = topology_function->call(dist, scale);
+//            BLT_TRACE("%f, %f, %f", ds, dist, scale);
+            if (data.is_bad)
+                closest_type[i] -= ds;
+            else
+                closest_type[i] += ds;
+        }
+    }
+    auto min_act = *std::min_element(closest_type.begin(), closest_type.end());
+    auto max_act = *std::max_element(closest_type.begin(), closest_type.end());
+    for (auto& v : closest_type)
+    {
+        auto n = 2 * (v - min_act) / (max_act - min_act) - 1;
+        v = n;
+    }
+    BLT_TRACE("Min %f Max %f", min_act, max_act);
+    
+    for (auto [i, v] : blt::enumerate(som->get_array().get_map()))
+    {
+        auto type = closest_type[i];
+        
+        blt::vec4 color;
+        if (type >= 0)
+            color = blt::make_color(0, type, 0);
+        else
+            color = blt::make_color(-type, 0, 0);
+        
+        renderer_2d.drawPointInternal(color,
+                                      point2d_t{draw_width + neuron_scale * 2 + v.get_x() * neuron_scale + neuron_scale,
+                                                draw_height + neuron_scale * 2 + v.get_y() * neuron_scale + neuron_scale, neuron_scale});
+    }
+    
     renderer_2d.render(window_data.width, window_data.height);
 }
 
@@ -178,5 +241,5 @@ int main(int argc, const char** argv)
     
     files = assign3::data_file_t::load_data_files_from_path(args.get<std::string>("file"));
     
-    blt::gfx::init(blt::gfx::window_data{"My Sexy Window", init, update, destroy}.setSyncInterval(1));
+    blt::gfx::init(blt::gfx::window_data{"My Sexy Window", init, update, destroy}.setSyncInterval(1).setMaximized(true));
 }

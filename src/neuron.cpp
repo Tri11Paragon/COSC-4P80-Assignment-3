@@ -33,6 +33,7 @@ namespace assign3
         return *this;
     }
     
+    // apply the distance based on the update neuron function
     neuron_t& neuron_t::update(const std::vector<Scalar>& new_data, Scalar dist, Scalar eta)
     {
         static thread_local std::vector<Scalar> diff;
@@ -47,12 +48,14 @@ namespace assign3
         return *this;
     }
     
+    // distance between an input vector and the neuron, in the n-space
     Scalar neuron_t::dist(const std::vector<Scalar>& X) const
     {
         euclidean_distance_function_t dist_func;
         return dist_func.distance(data, X);
     }
     
+    // distance between two neurons, in 2d
     Scalar neuron_t::distance(const neuron_t& n1, const neuron_t& n2)
     {
         euclidean_distance_function_t dist_func;

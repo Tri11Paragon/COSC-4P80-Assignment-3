@@ -21,6 +21,7 @@
 #include <blt/std/random.h>
 #include <blt/iterator/enumerate.h>
 #include <blt/std/logging.h>
+#include <cstring>
 
 namespace assign3
 {
@@ -46,11 +47,17 @@ namespace assign3
             auto v0 = array.get_map()[v0_idx];
             v0.update(current_data.bins, 1, eta);
             
+            // find the closest neighbour neuron to v0
+            auto distance_min = find_closest_neighbour_distance(v0_idx);
+            // this will find the required scaling factor to make a point in the middle between v0 and its closest neighbour activate 50%
+            // from the perspective of the gaussian function
+            auto scale = basis_func->scale(distance_min * 0.5f, 0.5);
+            
             for (auto [i, n] : blt::enumerate(array.get_map()))
             {
                 if (i == v0_idx)
                     continue;
-                auto dist = basis_func->call(neuron_t::distance(v0, n), time_ratio);
+                auto dist = basis_func->call(neuron_t::distance(v0, n), time_ratio * scale);
                 n.update(current_data.bins, dist, eta);
             }
         }
@@ -62,7 +69,6 @@ namespace assign3
     {
         blt::size_t index = 0;
         Scalar distance = std::numeric_limits<Scalar>::max();
-        
         for (auto [i, d] : blt::enumerate(array.get_map()))
         {
             auto dist = d.dist(data);
@@ -72,8 +78,18 @@ namespace assign3
                 distance = dist;
             }
         }
-        
         return index;
+    }
+    
+    Scalar som_t::find_closest_neighbour_distance(blt::size_t v0)
+    {
+        Scalar distance_min = std::numeric_limits<Scalar>::max();
+        for (const auto& [i, n] : blt::enumerate(array.get_map()))
+        {
+            if (i != v0)
+                distance_min = std::min(distance_min, neuron_t::distance(array.get_map()[v0], n));
+        }
+        return distance_min;
     }
     
     
