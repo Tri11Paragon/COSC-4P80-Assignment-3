@@ -5,6 +5,8 @@
 #include "blt/gfx/renderer/resource_manager.h"
 #include "blt/gfx/renderer/batch_2d_renderer.h"
 #include "blt/gfx/renderer/camera.h"
+#include "blt/std/binary_tree.h"
+#include "blt/std/random.h"
 #include <assign3/file.h>
 #include <assign3/som.h>
 #include <imgui.h>
@@ -67,6 +69,22 @@ void init(const blt::gfx::window_data&)
 {
     using namespace blt::gfx;
     BLT_INFO("Hello World!");
+    
+    blt::range_tree_t<blt::u64, std::string> tree{};
+    tree.insert(10, "hello there");
+    tree.insert(20, "larger");
+    tree.insert(5, "smaller");
+    tree.insert(7, "middle1");
+    tree.insert(15, "middle2");
+    tree.insert(25, "really large");
+    tree.insert(3, "really small");
+    
+    blt::random::random_t rand{std::random_device{}()};
+    
+    for (blt::size_t i = 0; i < 100; i++)
+        tree.insert(rand.get_u64(0, 1000), std::to_string(i));
+    
+    tree.print(std::cout, true);
     
     global_matrices.create_internals();
     resources.load_resources();
