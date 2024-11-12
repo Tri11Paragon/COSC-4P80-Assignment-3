@@ -4,13 +4,13 @@
 #include <blt/gfx/window.h>
 #include "blt/gfx/renderer/resource_manager.h"
 #include "blt/gfx/renderer/batch_2d_renderer.h"
+#include "blt/gfx/renderer/font_renderer.h"
 #include "blt/gfx/renderer/camera.h"
 #include "blt/std/binary_tree.h"
 #include "blt/std/random.h"
 #include <assign3/file.h>
 #include <assign3/som.h>
 #include <imgui.h>
-#include <execution>
 
 using namespace assign3;
 
@@ -21,6 +21,7 @@ blt::gfx::matrix_state_manager global_matrices;
 blt::gfx::resource_manager resources;
 blt::gfx::batch_renderer_2d renderer_2d(resources, global_matrices);
 blt::gfx::first_person_camera_2d camera;
+blt::gfx::font_renderer_t font_renderer{};
 
 blt::size_t som_width = 5;
 blt::size_t som_height = 5;
@@ -89,6 +90,13 @@ void init(const blt::gfx::window_data&)
     global_matrices.create_internals();
     resources.load_resources();
     renderer_2d.create();
+    
+    font_renderer.create({9, 11, 12, 13, 14, 16, 18, 24, 32, 36, 40, 48, 52, 64, 72, 96, 106}, 2048);
+    
+    font::font_face_t default_font_face{reinterpret_cast<const blt::u8*>(font::default_font_compressed_data), font::default_font_compressed_size,
+                                        true};
+    font::font_file_t default_font{default_font_face, 0, 128};
+    font_renderer.add_font(default_font);
     
     for (const auto& data : files)
         map_files_names.emplace_back(std::to_string(data.data_points.begin()->bins.size()));
@@ -220,7 +228,7 @@ void update(const blt::gfx::window_data& window_data)
         auto n = 2 * (v - min_act) / (max_act - min_act) - 1;
         v = n;
     }
-    BLT_TRACE("Min %f Max %f", min_act, max_act);
+//    BLT_TRACE("Min %f Max %f", min_act, max_act);
     
     for (auto [i, v] : blt::enumerate(som->get_array().get_map()))
     {
@@ -245,6 +253,7 @@ void destroy(const blt::gfx::window_data&)
     global_matrices.cleanup();
     resources.cleanup();
     renderer_2d.cleanup();
+    font_renderer.cleanup();
     blt::gfx::cleanup();
     BLT_INFO("Goodbye World!");
 }
