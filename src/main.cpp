@@ -6,8 +6,9 @@
 #include "blt/gfx/renderer/batch_2d_renderer.h"
 #include "blt/gfx/renderer/font_renderer.h"
 #include "blt/gfx/renderer/camera.h"
-#include "blt/std/binary_tree.h"
 #include "blt/std/random.h"
+#include "blt/profiling/profiler_v2.h"
+#include "blt/gfx/font/font_awesome_defines.h"
 #include <assign3/file.h>
 #include <assign3/som.h>
 #include <imgui.h>
@@ -21,7 +22,7 @@ blt::gfx::matrix_state_manager global_matrices;
 blt::gfx::resource_manager resources;
 blt::gfx::batch_renderer_2d renderer_2d(resources, global_matrices);
 blt::gfx::first_person_camera_2d camera;
-blt::gfx::font_renderer_t font_renderer{};
+blt::gfx::font_renderer_t font_renderer;
 
 blt::size_t som_width = 5;
 blt::size_t som_height = 5;
@@ -71,32 +72,46 @@ void init(const blt::gfx::window_data&)
     using namespace blt::gfx;
     BLT_INFO("Hello World!");
     
-    blt::range_tree_t<blt::u64, std::string> tree{};
-    tree.insert(10, "hello there");
-    tree.insert(20, "larger");
-    tree.insert(5, "smaller");
-    tree.insert(7, "middle1");
-    tree.insert(15, "middle2");
-    tree.insert(25, "really large");
-    tree.insert(3, "really small");
+    const unsigned char rickRollLyrics[] = {
+            87, 101, 39, 114, 101, 32, 110, 111, 32, 115, 116, 114, 97, 110, 103, 101, 114, 115, 32, 116, 111, 32, 108, 111, 118, 101, 44, 10,
+            89, 111, 117, 32, 107, 110, 111, 119, 32, 116, 104, 101, 32, 114, 117, 108, 101, 115, 32, 97, 110, 100, 32, 115, 111, 32, 100, 111, 32,
+            73, 46, 10,
+            65, 32, 102, 117, 108, 108, 32, 99, 111, 109, 109, 105, 116, 109, 101, 110, 116, 39, 115, 32, 119, 104, 97, 116, 32, 73, 39, 109, 32, 116,
+            104, 105, 110, 107, 105, 110, 103, 32, 111, 102, 44, 10,
+            89, 111, 117, 32, 119, 111, 117, 108, 100, 110, 39, 116, 32, 103, 101, 116, 32, 116, 104, 105, 115, 32, 102, 114, 111, 109, 32, 97, 110,
+            121, 32, 111, 116, 104, 101, 114, 32, 103, 117, 121, 46, 10,
+            73, 32, 106, 117, 115, 116, 32, 119, 97, 110, 110, 97, 32, 116, 101, 108, 108, 32, 121, 111, 117, 32, 104, 111, 119, 32, 73, 39, 109, 32,
+            102, 101, 101, 108, 105, 110, 103, 44, 10,
+            71, 111, 116, 116, 97, 32, 109, 97, 107, 101, 32, 121, 111, 117, 32, 117, 110, 100, 101, 114, 115, 116, 97, 110, 100, 46, 10,
+            78, 101, 118, 101, 114, 32, 103, 111, 110, 110, 97, 32, 103, 105, 118, 101, 32, 121, 111, 117, 32, 117, 112, 44, 10,
+            78, 101, 118, 101, 114, 32, 103, 111, 110, 110, 97, 32, 108, 101, 116, 32, 121, 111, 117, 32, 100, 111, 119, 110, 44, 10,
+            78, 101, 118, 101, 114, 32, 103, 111, 110, 110, 97, 32, 114, 117, 110, 32, 97, 114, 111, 117, 110, 100, 32, 97, 110, 100, 32, 100, 101,
+            115, 101, 114, 116, 32, 121, 111, 117, 46, 10,
+            78, 101, 118, 101, 114, 32, 103, 111, 110, 110, 97, 32, 109, 97, 107, 101, 32, 121, 111, 117, 32, 99, 114, 121, 44, 10,
+            78, 101, 118, 101, 114, 32, 103, 111, 110, 110, 97, 32, 115, 97, 121, 32, 103, 111, 111, 100, 98, 121, 101, 44, 10,
+            78, 101, 118, 101, 114, 32, 103, 111, 110, 110, 97, 32, 116, 101, 108, 108, 32, 97, 32, 108, 105, 101, 32, 97, 110, 100, 32, 104, 117,
+            114, 116, 32, 121, 111, 117, 46, 10, '\0'
+    };
     
-    blt::random::random_t rand{std::random_device{}()};
-    
-    for (blt::size_t i = 0; i < 100; i++)
-        tree.insert(rand.get_u64(0, 1000), std::to_string(i));
-    
-    tree.print(std::cout, true);
+    std::string rick{reinterpret_cast<const char*>(rickRollLyrics)};
+    auto lines = blt::string::split_sv(rick, '\n');
     
     global_matrices.create_internals();
     resources.load_resources();
     renderer_2d.create();
+    font_renderer.create_default(2048);
+//    font::font_face_t default_font_face{reinterpret_cast<const blt::u8*>(fontAwesomeSolid_compressed_data), fontAwesomeSolid_compressed_size, true};
+//    font::font_file_t default_font{default_font_face, 0, 128};
+//    font_renderer.add_font(default_font);
     
-    font_renderer.create({9, 11, 12, 13, 14, 16, 18, 24, 32, 36, 40, 48, 52, 64, 72, 96, 106}, 2048);
-    
-    font::font_face_t default_font_face{reinterpret_cast<const blt::u8*>(font::default_font_compressed_data), font::default_font_compressed_size,
-                                        true};
-    font::font_file_t default_font{default_font_face, 0, 128};
-    font_renderer.add_font(default_font);
+    BLT_START_INTERVAL("Text", "TextGen");
+    font_renderer.create_text("Parker is a faggot", 96)->setPosition(200, 200).setScale(0.1, 0.1);
+    for (const auto& [index, line] : blt::enumerate(lines))
+    {
+        font_renderer.create_text(line, 250)->setPosition(200, 300 + index * 96 * 0.1).setScale(0.1, 0.1);
+    }
+//    font_renderer.create_text("Parker is a faggot", 96)->setPosition(200, 300);
+    BLT_END_INTERVAL("Text", "TextGen");
     
     for (const auto& data : files)
         map_files_names.emplace_back(std::to_string(data.data_points.begin()->bins.size()));
@@ -246,6 +261,9 @@ void update(const blt::gfx::window_data& window_data)
     }
     
     renderer_2d.render(window_data.width, window_data.height);
+    BLT_START_INTERVAL("Text", "TextRender");
+    font_renderer.render();
+    BLT_END_INTERVAL("Text", "TextRender");
 }
 
 void destroy(const blt::gfx::window_data&)
@@ -255,6 +273,7 @@ void destroy(const blt::gfx::window_data&)
     renderer_2d.cleanup();
     font_renderer.cleanup();
     blt::gfx::cleanup();
+    BLT_PRINT_PROFILE("Text");
     BLT_INFO("Goodbye World!");
 }
 
