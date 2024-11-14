@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-project(COSC-4P80-Assignment-3 VERSION 0.0.13)
+project(COSC-4P80-Assignment-3 VERSION 0.0.14)
 include(FetchContent)
 
 option(ENABLE_ADDRSAN "Enable the address sanitizer" OFF)
@@ -41,4 +41,10 @@ endif ()
 if (${ENABLE_TSAN} MATCHES ON)
     target_compile_options(COSC-4P80-Assignment-3 PRIVATE -fsanitize=thread)
     target_link_options(COSC-4P80-Assignment-3 PRIVATE -fsanitize=thread)
+endif ()
+
+if (EMSCRIPTEN)
+    message("Linking Emscripten")
+    set(BLT_PRELOAD_PATH ../data)
+    include(lib/blt-with-graphics/cmake/link_flags.cmake)
 endif ()
