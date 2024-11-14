@@ -3,67 +3,17 @@
 #include <blt/parse/argparse.h>
 #include <blt/gfx/window.h>
 #include "blt/gfx/renderer/resource_manager.h"
-#include "blt/gfx/renderer/batch_2d_renderer.h"
-#include "blt/gfx/renderer/font_renderer.h"
 #include "blt/gfx/renderer/camera.h"
-#include "blt/std/random.h"
 #include <assign3/file.h>
-#include <assign3/som.h>
-#include <imgui.h>
+#include <assign3/manager.h>
 
 using namespace assign3;
 
-std::vector<data_file_t> files;
-std::unique_ptr<som_t> som;
-
 blt::gfx::matrix_state_manager global_matrices;
 blt::gfx::resource_manager resources;
-blt::gfx::batch_renderer_2d renderer_2d(resources, global_matrices);
 blt::gfx::first_person_camera_2d camera;
-blt::gfx::font_renderer_t font_renderer;
-
-blt::size_t som_width = 5;
-blt::size_t som_height = 5;
-blt::size_t max_epochs = 100;
-Scalar initial_learn_rate = 0.1;
-
-int currently_selected_network = 0;
-std::vector<std::string> map_files_names;
-std::unique_ptr<topology_function_t> topology_function;
-
-float neuron_scale = 35;
-float draw_width;
-float draw_height;
-
-void update_graphics()
-{
-    // find the min x / y for the currently drawn som as positions may depend on type.
-    const auto x_comparator = [](const auto& a, const auto& b) {
-        return a.get_x() < b.get_x();
-    };
-    const auto y_comparator = [](const auto& a, const auto& b) {
-        return a.get_y() < b.get_y();
-    };
-    const auto& som_neurons = som->get_array().get_map();
-    auto min_x = std::min_element(som_neurons.begin(), som_neurons.end(), x_comparator)->get_x();
-    auto max_x = std::max_element(som_neurons.begin(), som_neurons.end(), x_comparator)->get_x();
-    auto min_y = std::min_element(som_neurons.begin(), som_neurons.end(), y_comparator)->get_y();
-    auto max_y = std::max_element(som_neurons.begin(), som_neurons.end(), y_comparator)->get_y();
-    draw_width = (max_x - min_x) * neuron_scale;
-    draw_height = (max_y - min_y) * neuron_scale;
-    
-    topology_function = std::make_unique<gaussian_function_t>();
-}
-
-void generate_network(int selection)
-{
-    som = std::make_unique<som_t>(files[selection].normalize(), som_width, som_height, max_epochs);
-}
-
-const char* get_selection_string(void*, int selection)
-{
-    return map_files_names[selection].c_str();
-}
+assign3::motor_data_t data{};
+assign3::renderer_t renderer{data, resources, global_matrices};
 
 void init(const blt::gfx::window_data&)
 {
@@ -72,15 +22,7 @@ void init(const blt::gfx::window_data&)
     
     global_matrices.create_internals();
     resources.load_resources();
-    renderer_2d.create();
-    font_renderer.create_default(250, 2048);
-    
-    font_renderer.create_text("Hello There \"I'm a boy", 13)->setPosition(50, 500);
-    
-    for (const auto& data : files)
-        map_files_names.emplace_back(std::to_string(data.data_points.begin()->bins.size()));
-    
-    generate_network(currently_selected_network);
+    renderer.create();
 }
 
 void update(const blt::gfx::window_data& window_data)
@@ -92,150 +34,14 @@ void update(const blt::gfx::window_data& window_data)
     camera.update_view(global_matrices);
     global_matrices.update();
     
-    update_graphics();
-    
-    if (ImGui::Begin("Controls"))
-    {
-        ImGui::Text("Network Select");
-        if (ImGui::ListBox("##Network Select", &currently_selected_network, get_selection_string, nullptr, static_cast<int>(map_files_names.size())))
-            generate_network(currently_selected_network);
-        
-        if (ImGui::Button("Run Epoch"))
-        {
-            som->train_epoch(initial_learn_rate, topology_function.get());
-        }
-        static bool run;
-        ImGui::Checkbox("Run to completion", &run);
-        if (run)
-        {
-            if (som->get_current_epoch() < som->get_max_epochs())
-                som->train_epoch(initial_learn_rate, topology_function.get());
-        }
-        ImGui::Text("Epoch %ld / %ld", som->get_current_epoch(), som->get_max_epochs());
-    }
-    ImGui::End();
-    
-    static std::vector<blt::i64> activations;
-    
-    activations.clear();
-    activations.resize(som->get_array().get_map().size());
-    
-    auto current_data_file = files[currently_selected_network].normalize();
-    for (auto& v : current_data_file.data_points)
-    {
-        auto nearest = som->get_closest_neuron(v.bins);
-        activations[nearest] += v.is_bad ? -1 : 1;
-    }
-    
-    blt::i64 max = *std::max_element(activations.begin(), activations.end());
-    blt::i64 min = *std::min_element(activations.begin(), activations.end());
-    
-    for (auto [i, v] : blt::enumerate(som->get_array().get_map()))
-    {
-        auto activation = activations[i];
-        
-        blt::vec4 color = blt::make_color(1, 1, 1);
-        if (activation > 0)
-            color = blt::make_color(0, static_cast<Scalar>(activation) / static_cast<Scalar>(max), 0);
-        else if (activation < 0)
-            color = blt::make_color(std::abs(static_cast<Scalar>(activation) / static_cast<Scalar>(min)), 0, 0);
-        
-        renderer_2d.drawPointInternal(color,
-                                      point2d_t{v.get_x() * neuron_scale + neuron_scale, v.get_y() * neuron_scale + neuron_scale, neuron_scale});
-    }
-    
-    static std::vector<float> closest_type;
-    closest_type.clear();
-    closest_type.resize(som->get_array().get_map().size());
-    
-    for (auto [i, v] : blt::enumerate(som->get_array().get_map()))
-    {
-        Scalar lowest_distance = std::numeric_limits<Scalar>::max();
-        bool is_bad = false;
-        for (const auto& data : current_data_file.data_points)
-        {
-            auto dist = v.dist(data.bins);
-            if (dist < lowest_distance)
-            {
-                lowest_distance = dist;
-                is_bad = data.is_bad;
-            }
-        }
-//        BLT_TRACE(is_bad ? -lowest_distance : lowest_distance);
-        closest_type[i] = is_bad ? -lowest_distance : lowest_distance;
-    }
-    
-    auto min_dist = *std::min_element(closest_type.begin(), closest_type.end());
-    auto max_dist = *std::max_element(closest_type.begin(), closest_type.end());
-    
-    for (auto [i, v] : blt::enumerate(som->get_array().get_map()))
-    {
-        auto type = closest_type[i];
-        
-        blt::vec4 color = blt::make_color(1, 1, 1);
-        if (type >= 0)
-            color = blt::make_color(0, 1 - (type / max_dist) + 0.1f, 0);
-        else if (type < 0)
-            color = blt::make_color(1 - (type / min_dist) + 0.1f, 0, 0);
-        
-        renderer_2d.drawPointInternal(color,
-                                      point2d_t{draw_width + neuron_scale * 2 + v.get_x() * neuron_scale + neuron_scale,
-                                                v.get_y() * neuron_scale + neuron_scale, neuron_scale});
-    }
-    
-    closest_type.clear();
-    closest_type.resize(som->get_array().get_map().size());
-    for (auto [i, v] : blt::enumerate(som->get_array().get_map()))
-    {
-        auto half = som->find_closest_neighbour_distance(i);
-        auto scale = topology_function->scale(half * 0.5f, 0.5);
-        for (const auto& data : current_data_file.data_points)
-        {
-            auto dist = v.dist(data.bins);
-            auto ds = topology_function->call(dist, scale);
-//            BLT_TRACE("%f, %f, %f", ds, dist, scale);
-            if (data.is_bad)
-                closest_type[i] -= ds;
-            else
-                closest_type[i] += ds;
-        }
-    }
-    auto min_act = *std::min_element(closest_type.begin(), closest_type.end());
-    auto max_act = *std::max_element(closest_type.begin(), closest_type.end());
-    for (auto& v : closest_type)
-    {
-        auto n = 2 * (v - min_act) / (max_act - min_act) - 1;
-        v = n;
-    }
-//    BLT_TRACE("Min %f Max %f", min_act, max_act);
-    
-    for (auto [i, v] : blt::enumerate(som->get_array().get_map()))
-    {
-        auto type = closest_type[i];
-        
-        blt::vec4 color;
-        if (type >= 0)
-            color = blt::make_color(0, type, 0);
-        else
-            color = blt::make_color(-type, 0, 0);
-        
-        renderer_2d.drawPointInternal(color,
-                                      point2d_t{draw_width + neuron_scale * 2 + v.get_x() * neuron_scale + neuron_scale,
-                                                draw_height + neuron_scale * 2 + v.get_y() * neuron_scale + neuron_scale, neuron_scale});
-    }
-    
-    font_renderer.render_text("Wow I hate you too", 32)->setPosition(100, 300);
-    
-    renderer_2d.render(window_data.width, window_data.height);
-    font_renderer.render();
+    renderer.render();
 }
 
 void destroy(const blt::gfx::window_data&)
 {
     global_matrices.cleanup();
     resources.cleanup();
-    renderer_2d.cleanup();
-    font_renderer.cleanup();
+    renderer.cleanup();
     blt::gfx::cleanup();
     BLT_INFO("Goodbye World!");
 }
@@ -248,7 +54,8 @@ int main(int argc, const char** argv)
     
     auto args = parser.parse_args(argc, argv);
     
-    files = assign3::data_file_t::load_data_files_from_path(args.get<std::string>("file"));
+    data.files = assign3::data_file_t::load_data_files_from_path(args.get<std::string>("file"));
+    data.update();
     
     blt::gfx::init(blt::gfx::window_data{"My Sexy Window", init, update, destroy}.setSyncInterval(1).setMaximized(true));
 }
