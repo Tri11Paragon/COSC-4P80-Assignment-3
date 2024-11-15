@@ -3,6 +3,7 @@
 #include <blt/gfx/window.h>
 #include "blt/gfx/renderer/resource_manager.h"
 #include "blt/gfx/renderer/camera.h"
+#include "implot.h"
 #include <assign3/file.h>
 #include <assign3/manager.h>
 
@@ -22,6 +23,8 @@ void init(const blt::gfx::window_data&)
     global_matrices.create_internals();
     resources.load_resources();
     renderer.create();
+    
+    ImPlot::CreateContext();
 }
 
 void update(const blt::gfx::window_data& window_data)
@@ -41,6 +44,7 @@ void destroy(const blt::gfx::window_data&)
     global_matrices.cleanup();
     resources.cleanup();
     renderer.cleanup();
+    ImPlot::DestroyContext();
     blt::gfx::cleanup();
     BLT_INFO("Goodbye World!");
 }

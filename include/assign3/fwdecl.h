@@ -20,6 +20,8 @@
 #define COSC_4P80_ASSIGNMENT_3_FWDECL_H
 
 #include <blt/std/types.h>
+#include <blt/std/hashmap.h>
+#include <array>
 
 namespace assign3
 {
@@ -37,6 +39,17 @@ namespace assign3
         GAUSSIAN_DIST = RENDER_2D,
         TOROIDAL = RENDER_3D,
         CYLINDER = RENDER_3D
+    };
+    
+    enum class debug_type
+    {
+        DATA_POINT,
+        DISTANCE
+    };
+    
+    inline std::array<std::string, 2> debug_names {
+            "Distance to Datapoint",
+            "Distance to Neighbours"
     };
 }
 

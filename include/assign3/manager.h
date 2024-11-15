@@ -30,16 +30,19 @@ namespace assign3
 {
     class renderer_t;
     
-    struct render_info_t
+    struct neuron_render_info_t
     {
         blt::vec2 base_pos;
         blt::vec2 neuron_padding;
         float neuron_scale = 0;
         
-        static render_info_t fill_screen(renderer_t& renderer, float neuron_scale = 35, float x_padding = 250, float y_padding = 50, float w_padding = 50, float h_padding = 50);
+        static neuron_render_info_t fill_screen(renderer_t& renderer, float neuron_scale = 35, float x_padding = 250, float y_padding = 50,
+                                                float w_padding = 50, float h_padding = 50);
         
         BLT_LVALUE_SETTER(blt::vec2, base_pos);
+        
         BLT_LVALUE_SETTER(blt::vec2, neuron_padding);
+        
         BLT_PRVALUE_SETTER(float, neuron_scale);
     };
     
@@ -52,11 +55,24 @@ namespace assign3
             void update();
     };
     
+    struct render_data_t
+    {
+        blt::size_t index;
+        const neuron_t& neuron;
+        blt::vec2 neuron_scaled;
+        blt::vec2 neuron_offset;
+        blt::vec2 neuron_padded;
+        
+        render_data_t(size_t index, const neuron_t& neuron, const blt::vec2& neuronScaled, const blt::vec2& neuronOffset,
+                      const blt::vec2& neuronPadded):
+                index(index), neuron(neuron), neuron_scaled(neuronScaled), neuron_offset(neuronOffset), neuron_padded(neuronPadded)
+        {}
+    };
     
     class renderer_t
     {
             friend motor_data_t;
-            friend render_info_t;
+            friend neuron_render_info_t;
         public:
             explicit renderer_t(motor_data_t& data, blt::gfx::resource_manager& resources, blt::gfx::matrix_state_manager& state):
                     motor_data(data), br2d{resources, state}
@@ -66,7 +82,11 @@ namespace assign3
             
             void cleanup();
             
-            void draw_som(const std::function<blt::vec4(neuron_t&)>& color_func, bool debug);
+            std::vector<float> get_neuron_activations(const data_file_t& file);
+            
+            void draw_som(neuron_render_info_t info, const std::function<blt::vec4(render_data_t)>& color_func);
+            
+            void draw_debug(const data_file_t& file);
             
             void render();
             
@@ -95,6 +115,10 @@ namespace assign3
             Scalar initial_learn_rate = 0.1;
             
             int currently_selected_network = 0;
+            bool debug_mode = false;
+            bool running = false;
+            int debug_state = 0;
+            int selected_data_point = 0;
     };
     
 }

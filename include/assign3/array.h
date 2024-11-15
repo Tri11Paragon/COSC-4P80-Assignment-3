@@ -21,6 +21,7 @@
 
 #include <assign3/fwdecl.h>
 #include <assign3/neuron.h>
+#include <blt/math/vectors.h>
 
 namespace assign3
 {
@@ -36,7 +37,7 @@ namespace assign3
                         map.emplace_back(dimensions, (j % 2 == 0 ? static_cast<Scalar>(i) : static_cast<Scalar>(i) + 0.5f), j);
             }
             
-            [[nodiscard]] std::pair<blt::size_t, blt::size_t> from_index(blt::size_t index) const
+            [[nodiscard]] blt::vec2ul from_index(blt::size_t index) const
             {
                 return {index % width, index / width};
             }
