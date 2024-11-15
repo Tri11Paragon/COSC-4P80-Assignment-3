@@ -236,5 +236,4 @@ namespace assign3
         
         topology_function = std::make_unique<gaussian_function_t>();
     }
-    
 }
