@@ -84,6 +84,8 @@ namespace assign3
             
             std::vector<float> get_neuron_activations(const data_file_t& file);
             
+            static std::vector<float> normalize_data(const std::vector<float>& data);
+            
             void draw_som(neuron_render_info_t info, const std::function<blt::vec4(render_data_t)>& color_func);
             
             void draw_debug(const data_file_t& file);
@@ -116,9 +118,14 @@ namespace assign3
             
             int currently_selected_network = 0;
             bool debug_mode = false;
+            bool draw_colors = true;
+            bool draw_data_lines = false;
             bool running = false;
             int debug_state = 0;
             int selected_data_point = 0;
+            
+            float requested_activation = 0.5;
+            float at_distance_measurement = 2;
     };
     
 }

@@ -56,9 +56,8 @@ namespace assign3
     }
     
     // distance between two neurons, in 2d
-    Scalar neuron_t::distance(const neuron_t& n1, const neuron_t& n2)
+    Scalar neuron_t::distance(distance_function_t* dist_func, const neuron_t& n1, const neuron_t& n2)
     {
-        euclidean_distance_function_t dist_func;
-        return dist_func.distance({n1.get_x(), n1.get_y()}, {n2.get_x(), n2.get_y()});
+        return dist_func->distance({n1.get_x(), n1.get_y()}, {n2.get_x(), n2.get_y()});
     }
 }

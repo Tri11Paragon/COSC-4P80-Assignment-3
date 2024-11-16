@@ -38,7 +38,7 @@ namespace assign3
             
             neuron_t& update(const std::vector<Scalar>& new_data, Scalar dist, Scalar eta);
             
-            static Scalar distance(const neuron_t& n1, const neuron_t& n2);
+            static Scalar distance(distance_function_t* dist_func, const neuron_t& n1, const neuron_t& n2);
             
             [[nodiscard]] Scalar dist(const std::vector<Scalar>& X) const;
             

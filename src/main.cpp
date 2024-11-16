@@ -58,6 +58,8 @@ int main(int argc, const char** argv)
     auto args = parser.parse_args(argc, argv);
     
     data.files = assign3::data_file_t::load_data_files_from_path(args.get<std::string>("file"));
+    for (auto& v : data.files)
+        v = v.normalize();
     data.update();
     
     blt::gfx::init(blt::gfx::window_data{"My Sexy Window", init, update, destroy}.setSyncInterval(1).setMaximized(true));

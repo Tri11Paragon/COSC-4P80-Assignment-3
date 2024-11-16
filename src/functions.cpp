@@ -18,6 +18,7 @@
 #include <assign3/functions.h>
 #include <cmath>
 #include "blt/iterator/zip.h"
+#include <blt/std/assert.h>
 
 namespace assign3
 {
@@ -42,5 +43,15 @@ namespace assign3
             dist += d * d;
         }
         return std::sqrt(dist);
+    }
+    
+    Scalar toroidal_euclidean_distance_function_t::distance(blt::span<const Scalar> x, blt::span<const Scalar> y) const
+    {
+        BLT_ASSERT(x.size() == 2 && y.size() == 2);
+        Scalar x_diff = x[0] - y[0];
+        Scalar y_diff = x[1] - y[1];
+        Scalar x_min = std::min(x_diff, static_cast<Scalar>(width) - x_diff);
+        Scalar y_min = std::min(y_diff, static_cast<Scalar>(height) - y_diff);
+        return std::sqrt(x_min * x_min + y_min * y_min);
     }
 }

@@ -57,7 +57,8 @@ namespace assign3
             {
                 if (i == v0_idx)
                     continue;
-                auto dist = basis_func->call(neuron_t::distance(v0, n), time_ratio * scale);
+                toroidal_euclidean_distance_function_t dist_func{static_cast<blt::i32>(array.get_width()), static_cast<blt::i32>(array.get_height())};
+                auto dist = basis_func->call(neuron_t::distance(&dist_func, v0, n), time_ratio * scale);
                 n.update(current_data.bins, dist, eta);
             }
         }
@@ -83,11 +84,12 @@ namespace assign3
     
     Scalar som_t::find_closest_neighbour_distance(blt::size_t v0)
     {
+        toroidal_euclidean_distance_function_t dist_func{static_cast<blt::i32>(array.get_width()), static_cast<blt::i32>(array.get_height())};
         Scalar distance_min = std::numeric_limits<Scalar>::max();
         for (const auto& [i, n] : blt::enumerate(array.get_map()))
         {
             if (i != v0)
-                distance_min = std::min(distance_min, neuron_t::distance(array.get_map()[v0], n));
+                distance_min = std::min(distance_min, neuron_t::distance(&dist_func, array.get_map()[v0], n));
         }
         return distance_min;
     }
