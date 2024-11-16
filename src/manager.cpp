@@ -78,7 +78,7 @@ namespace assign3
         
         topology_function = std::make_unique<gaussian_function_t>();
         
-        generate_network(currently_selected_network);
+        regenerate_network();
         update_graphics();
     }
     
@@ -117,12 +117,20 @@ namespace assign3
                 ImGui::Text("Network Select");
                 if (ImGui::ListBox("##Network Select", &currently_selected_network, get_selection_string, motor_data.map_files_names.data(),
                                    static_cast<int>(motor_data.map_files_names.size())))
-                    generate_network(currently_selected_network);
+                    regenerate_network();
                 
                 if (ImGui::Button("Run Epoch"))
                     som->train_epoch(initial_learn_rate, topology_function.get());
                 ImGui::Checkbox("Run to completion", &running);
                 ImGui::Text("Epoch %ld / %ld", som->get_current_epoch(), som->get_max_epochs());
+            }
+            if (ImGui::CollapsingHeader("SOM Settings"))
+            {
+                if (ImGui::InputInt("SOM Width", &som_width) || ImGui::InputInt("SOM Height", &som_height) ||
+                    ImGui::InputInt("Max Epochs", &max_epochs))
+                    regenerate_network();
+                if (ImGui::InputFloat("Initial Learn Rate", &initial_learn_rate))
+                    regenerate_network();
             }
             if (ImGui::CollapsingHeader("Debug"))
             {
@@ -230,11 +238,25 @@ namespace assign3
         {
             case debug_type::DATA_POINT:
             {
+                std::vector<blt::vec2> data_positions;
+                for (const auto& [i, v] : blt::enumerate(file.data_points))
+                {
+                    auto pos = som->get_topological_position(v.bins) * 120 + blt::vec2{370, 145};
+                    auto color = blt::make_color(1,1,1);
+                    float z_index = 1;
+                    if (i == static_cast<blt::size_t>(selected_data_point))
+                    {
+                        color = blt::make_color(1, 0, 1);
+                        z_index = 2;
+                    }
+                    br2d.drawRectangleInternal(color, blt::gfx::rectangle2d_t{pos, blt::vec2{8,8}}, z_index);
+                }
+                
                 const auto& data_point = file.data_points[selected_data_point];
                 auto closest_type = get_neuron_activations(file);
-                draw_som(neuron_render_info_t{}.set_base_pos({370, 145}).set_neuron_scale(120).set_neuron_padding({50, 50}),
-                         [this, &closest_type](render_data_t context) {
-                             auto& text = fr2d.render_text(std::to_string(closest_type[context.index]), 13);
+                draw_som(neuron_render_info_t{}.set_base_pos({370, 145}).set_neuron_scale(120).set_neuron_padding({0, 0}),
+                         [this, &data_point, &closest_type](render_data_t context) {
+                             auto& text = fr2d.render_text(std::to_string(context.neuron.dist(data_point.bins)), 18).setColor(0.2, 0.2, 0.8);
                              auto text_width = text.getAssociatedText().getTextWidth();
                              auto text_height = text.getAssociatedText().getTextHeight();
                              text.setPosition(context.neuron_padded - blt::vec2{text_width / 2.0f, text_height / 2.0f}).setZIndex(1);

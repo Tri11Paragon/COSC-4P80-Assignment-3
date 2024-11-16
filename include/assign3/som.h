@@ -37,6 +37,8 @@ namespace assign3
             
             void train_epoch(Scalar initial_learn_rate, topology_function_t* basis_func);
             
+            blt::vec2 get_topological_position(const std::vector<Scalar>& data);
+            
             [[nodiscard]] const array_t& get_array() const
             { return array; }
             

@@ -92,9 +92,9 @@ namespace assign3
             
             void update_graphics();
             
-            void generate_network(int selection)
+            void regenerate_network()
             {
-                som = std::make_unique<som_t>(motor_data.files[selection].normalize(), som_width, som_height, max_epochs);
+                som = std::make_unique<som_t>(motor_data.files[currently_selected_network].normalize(), som_width, som_height, max_epochs);
             }
         
         private:
@@ -109,9 +109,9 @@ namespace assign3
             float draw_height = 0;
             float neuron_scale = 35;
             
-            blt::size_t som_width = 5;
-            blt::size_t som_height = 5;
-            blt::size_t max_epochs = 100;
+            blt::i32 som_width = 5;
+            blt::i32 som_height = 5;
+            blt::i32 max_epochs = 100;
             Scalar initial_learn_rate = 0.1;
             
             int currently_selected_network = 0;

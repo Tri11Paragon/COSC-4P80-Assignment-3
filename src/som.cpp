@@ -92,5 +92,51 @@ namespace assign3
         return distance_min;
     }
     
+    struct distance_data_t
+    {
+        Scalar data;
+        blt::size_t index;
+        
+        distance_data_t(Scalar data, size_t index): data(data), index(index)
+        {}
+        
+        inline friend bool operator<(const distance_data_t& a, const distance_data_t& b)
+        {
+            return a.data < b.data;
+        }
+        
+        inline friend bool operator==(const distance_data_t& a, const distance_data_t& b)
+        {
+            return a.data == b.data;
+        }
+    };
+    
+    blt::vec2 som_t::get_topological_position(const std::vector<Scalar>& data)
+    {
+        std::vector<distance_data_t> distances;
+        for (auto [i, d] : blt::enumerate(get_array().get_map()))
+            distances.emplace_back(d.dist(data), i);
+        std::sort(distances.begin(), distances.end());
+        
+        auto [dist_1, ni_1] = distances[0];
+        auto [dist_2, ni_2] = distances[1];
+        auto [dist_3, ni_3] = distances[2];
+        
+        float dt = dist_1 + dist_2 + dist_3;
+        float dp1 = dist_1 / dt;
+        float dp2 = dist_2 / dt;
+        float dp3 = dist_3 / dt;
+        
+        auto n_1 = array.get_map()[ni_1];
+        auto n_2 = array.get_map()[ni_2];
+        auto n_3 = array.get_map()[ni_3];
+
+        auto p_1 = blt::vec2{n_1.get_x(), n_1.get_y()};
+        auto p_2 = blt::vec2{n_2.get_x(), n_2.get_y()};
+        auto p_3 = blt::vec2{n_3.get_x(), n_3.get_y()};
+        
+        return (dp1 * p_1) + (dp2 * p_2) + (dp3 * p_3);
+    }
+    
     
 }
