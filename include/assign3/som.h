@@ -29,7 +29,8 @@ namespace assign3
     class som_t
     {
         public:
-            som_t(const data_file_t& file, blt::size_t width, blt::size_t height, blt::size_t max_epochs, distance_function_t* dist_func, shape_t shape);
+            som_t(const data_file_t& file, blt::size_t width, blt::size_t height, blt::size_t max_epochs, distance_function_t* dist_func,
+                  shape_t shape, init_t init, bool normalize);
             
             blt::size_t get_closest_neuron(const std::vector<Scalar>& data);
             

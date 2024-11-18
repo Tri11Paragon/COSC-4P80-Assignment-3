@@ -107,7 +107,8 @@ namespace assign3
                 }
                 error_plotting.clear();
                 som = std::make_unique<som_t>(motor_data.files[currently_selected_network], som_width, som_height, max_epochs,
-                                              distance_function.get(), static_cast<shape_t>(selected_som_mode));
+                                              distance_function.get(), static_cast<shape_t>(selected_som_mode),
+                                              static_cast<init_t>(selected_init_type), normalize_init);
                 error_plotting.push_back(som->topological_error(motor_data.files[currently_selected_network]));
             }
         
@@ -129,12 +130,15 @@ namespace assign3
             
             int currently_selected_network = 0;
             int selected_som_mode = 0;
+            int selected_init_type = 0;
+            bool normalize_init = false;
             bool debug_mode = false;
             bool draw_colors = true;
             bool draw_data_lines = false;
             bool running = false;
             int debug_state = 0;
             int selected_data_point = 0;
+            int selected_neuron = 0;
             
             float requested_activation = 0.5;
             float at_distance_measurement = 2;

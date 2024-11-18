@@ -23,6 +23,7 @@
 #include <assign3/fwdecl.h>
 #include "blt/std/types.h"
 #include <assign3/functions.h>
+#include <assign3/file.h>
 
 namespace assign3
 {
@@ -34,7 +35,7 @@ namespace assign3
                 data.resize(dimensions);
             }
             
-            neuron_t& randomize(blt::size_t seed);
+            neuron_t& randomize(blt::size_t seed, init_t init, bool normalize, const data_file_t& file);
             
             neuron_t& update(const std::vector<Scalar>& new_data, Scalar dist, Scalar eta);
             

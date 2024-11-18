@@ -39,13 +39,13 @@ namespace assign3
     };
     
     inline std::array<std::string, 4> shape_names{
-        "Grid",
-        "Edge Wrapped Grid",
-        "Honey Comb Grid",
-        "Edge Wrapped Honey Comb"
+            "Grid",
+            "Edge Wrapped Grid",
+            "Honey Comb Grid",
+            "Edge Wrapped Honey Comb"
     };
     
-    enum class debug_type
+    enum class debug_t
     {
         DATA_POINT,
         DISTANCE
@@ -54,6 +54,25 @@ namespace assign3
     inline std::array<std::string, 2> debug_names{
             "Distance to Datapoint",
             "Distance to Neighbours"
+    };
+    
+    enum class init_t
+    {
+        COMPLETELY_RANDOM,
+        RANDOM_DATA,
+        SAMPLED_DATA
+    };
+    
+    inline std::array<std::string, 3> init_names{
+            "Completely Random",
+            "Random Data Based",
+            "Sample Based"
+    };
+    
+    inline std::array<std::string, 3> init_helps{
+            "Initializes weights randomly between -1 and 1",
+            "Find min and max of each data element, then initialize weights between that range",
+            "Initialize weights based on the input data"
     };
 }
 

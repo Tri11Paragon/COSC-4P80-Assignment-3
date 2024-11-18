@@ -27,11 +27,11 @@ namespace assign3
 {
     
     som_t::som_t(const data_file_t& file, blt::size_t width, blt::size_t height, blt::size_t max_epochs, distance_function_t* dist_func,
-                 shape_t shape):
+                 shape_t shape, init_t init, bool normalize):
             array(file.data_points.begin()->bins.size(), width, height, shape), file(file), max_epochs(max_epochs), dist_func(dist_func)
     {
         for (auto& v : array.get_map())
-            v.randomize(std::random_device{}());
+            v.randomize(std::random_device{}(), init, normalize, file);
     }
     
     void som_t::train_epoch(Scalar initial_learn_rate, topology_function_t* basis_func)
