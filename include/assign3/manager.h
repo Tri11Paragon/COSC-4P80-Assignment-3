@@ -92,31 +92,43 @@ namespace assign3
             
             void render();
             
-            void update_graphics();
-            
             void regenerate_network()
             {
-                som = std::make_unique<som_t>(motor_data.files[currently_selected_network].normalize(), som_width, som_height, max_epochs);
+                switch (static_cast<shape_t>(selected_som_mode))
+                {
+                    case shape_t::GRID:
+                    case shape_t::GRID_OFFSET:
+                        distance_function = std::make_unique<euclidean_distance_function_t>();
+                        break;
+                    case shape_t::GRID_OFFSET_WRAP:
+                    case shape_t::GRID_WRAP:
+                        distance_function = std::make_unique<toroidal_euclidean_distance_function_t>(som_width, som_height);
+                        break;
+                }
+                error_plotting.clear();
+                som = std::make_unique<som_t>(motor_data.files[currently_selected_network], som_width, som_height, max_epochs,
+                                              distance_function.get(), static_cast<shape_t>(selected_som_mode));
+                error_plotting.push_back(som->topological_error(motor_data.files[currently_selected_network]));
             }
         
         private:
             motor_data_t& motor_data;
             std::unique_ptr<som_t> som;
             std::unique_ptr<topology_function_t> topology_function;
+            std::unique_ptr<distance_function_t> distance_function;
+            
+            std::vector<Scalar> error_plotting;
             
             blt::gfx::font_renderer_t fr2d{};
             blt::gfx::batch_renderer_2d br2d;
             
-            float draw_width = 0;
-            float draw_height = 0;
-            float neuron_scale = 35;
-            
             blt::i32 som_width = 5;
             blt::i32 som_height = 5;
-            blt::i32 max_epochs = 100;
-            Scalar initial_learn_rate = 0.1;
+            blt::i32 max_epochs = 2000;
+            Scalar initial_learn_rate = 1;
             
             int currently_selected_network = 0;
+            int selected_som_mode = 0;
             bool debug_mode = false;
             bool draw_colors = true;
             bool draw_data_lines = false;

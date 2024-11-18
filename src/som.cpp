@@ -26,8 +26,9 @@
 namespace assign3
 {
     
-    som_t::som_t(const data_file_t& file, blt::size_t width, blt::size_t height, blt::size_t max_epochs):
-            array(file.data_points.begin()->bins.size(), width, height), file(file), max_epochs(max_epochs)
+    som_t::som_t(const data_file_t& file, blt::size_t width, blt::size_t height, blt::size_t max_epochs, distance_function_t* dist_func,
+                 shape_t shape):
+            array(file.data_points.begin()->bins.size(), width, height, shape), file(file), max_epochs(max_epochs), dist_func(dist_func)
     {
         for (auto& v : array.get_map())
             v.randomize(std::random_device{}());
@@ -57,8 +58,7 @@ namespace assign3
             {
                 if (i == v0_idx)
                     continue;
-                toroidal_euclidean_distance_function_t dist_func{static_cast<blt::i32>(array.get_width()), static_cast<blt::i32>(array.get_height())};
-                auto dist = basis_func->call(neuron_t::distance(&dist_func, v0, n), time_ratio * scale);
+                auto dist = basis_func->call(neuron_t::distance(dist_func, v0, n), time_ratio * scale);
                 n.update(current_data.bins, dist, eta);
             }
         }
@@ -84,12 +84,11 @@ namespace assign3
     
     Scalar som_t::find_closest_neighbour_distance(blt::size_t v0)
     {
-        toroidal_euclidean_distance_function_t dist_func{static_cast<blt::i32>(array.get_width()), static_cast<blt::i32>(array.get_height())};
         Scalar distance_min = std::numeric_limits<Scalar>::max();
         for (const auto& [i, n] : blt::enumerate(array.get_map()))
         {
             if (i != v0)
-                distance_min = std::min(distance_min, neuron_t::distance(&dist_func, array.get_map()[v0], n));
+                distance_min = std::min(distance_min, neuron_t::distance(dist_func, array.get_map()[v0], n));
         }
         return distance_min;
     }
@@ -132,12 +131,47 @@ namespace assign3
         auto n_1 = array.get_map()[ni_1];
         auto n_2 = array.get_map()[ni_2];
         auto n_3 = array.get_map()[ni_3];
-
+        
         auto p_1 = blt::vec2{n_1.get_x(), n_1.get_y()};
         auto p_2 = blt::vec2{n_2.get_x(), n_2.get_y()};
         auto p_3 = blt::vec2{n_3.get_x(), n_3.get_y()};
         
         return (dp1 * p_1) + (dp2 * p_2) + (dp3 * p_3);
+    }
+    
+    Scalar som_t::topological_error(const data_file_t& data)
+    {
+        Scalar total = 0;
+        std::vector<std::pair<blt::size_t, Scalar>> distances;
+        
+        for (const auto& x : data.data_points)
+        {
+            distances.clear();
+            for (const auto& [i, n] : blt::enumerate(array.get_map()))
+                distances.emplace_back(i, n.dist(x.bins));
+            
+            std::pair<blt::size_t, Scalar> min1 = {0, std::numeric_limits<Scalar>::max()};
+            std::pair<blt::size_t, Scalar> min2 = {0, std::numeric_limits<Scalar>::max()};
+            
+            for (const auto& elem : distances)
+            {
+                if (elem.second < min1.second)
+                {
+                    min2 = min1;
+                    min1 = elem;
+                } else if (elem.second < min2.second)
+                    min2 = elem;
+            }
+            
+            // we can assert the neurons are neighbours if the distance between the BMUs and the nearest neighbour are equal.
+            auto min_distances = neuron_t::distance(dist_func, array.get_map()[min1.first], array.get_map()[min2.first]);
+            auto neighbour_distances = find_closest_neighbour_distance(min1.first);
+            
+            if (!blt::f_equal(min_distances, neighbour_distances))
+                total += 1;
+        }
+        
+        return total / static_cast<Scalar>(data.data_points.size());
     }
     
     

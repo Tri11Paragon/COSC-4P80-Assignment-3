@@ -29,12 +29,24 @@ namespace assign3
     class array_t
     {
         public:
-            explicit array_t(blt::size_t dimensions, blt::size_t width, blt::size_t height):
+            explicit array_t(blt::size_t dimensions, blt::size_t width, blt::size_t height, shape_t shape):
                     width(static_cast<blt::i64>(width)), height(static_cast<blt::i64>(height))
             {
-                for (blt::size_t i = 0; i < width; i++)
-                    for (blt::size_t j = 0; j < height; j++)
-                        map.emplace_back(dimensions, (j % 2 == 0 ? static_cast<Scalar>(i) : static_cast<Scalar>(i) + 0.5f), j);
+                switch (shape)
+                {
+                    case shape_t::GRID:
+                    case shape_t::GRID_WRAP:
+                        for (blt::size_t j = 0; j < height; j++)
+                            for (blt::size_t i = 0; i < width; i++)
+                                map.emplace_back(dimensions, i, j);
+                        break;
+                    case shape_t::GRID_OFFSET:
+                    case shape_t::GRID_OFFSET_WRAP:
+                        for (blt::size_t j = 0; j < height; j++)
+                            for (blt::size_t i = 0; i < width; i++)
+                                map.emplace_back(dimensions, (j % 2 == 0 ? static_cast<Scalar>(i) : static_cast<Scalar>(i) + 0.5f), j);
+                        break;
+                }
             }
             
             [[nodiscard]] blt::vec2ul from_index(blt::size_t index) const

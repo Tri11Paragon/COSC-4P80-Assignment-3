@@ -97,7 +97,6 @@ namespace assign3
         topology_function = std::make_unique<gaussian_function_t>();
         
         regenerate_network();
-        update_graphics();
     }
     
     void renderer_t::cleanup()
@@ -142,8 +141,13 @@ namespace assign3
                 ImGui::Checkbox("Run to completion", &running);
                 ImGui::Text("Epoch %ld / %ld", som->get_current_epoch(), som->get_max_epochs());
             }
+            ImGui::SetNextItemOpen(true, ImGuiCond_Appearing);
             if (ImGui::CollapsingHeader("SOM Settings"))
             {
+                ImGui::Text("Network Shape");
+                if (ImGui::ListBox("##NetworkShape", &selected_som_mode, get_selection_string, shape_names.data(),
+                                   static_cast<int>(shape_names.size())))
+                    regenerate_network();
                 if (ImGui::InputInt("SOM Width", &som_width) || ImGui::InputInt("SOM Height", &som_height) ||
                     ImGui::InputInt("Max Epochs", &max_epochs))
                     regenerate_network();
@@ -195,13 +199,22 @@ namespace assign3
                                     ImPlotPoint(som_width, som_height), ImPlotHeatmapFlags_ColMajor);
                 ImPlot::EndPlot();
             }
+            ImPlot::SetNextAxesLimits(0, max_epochs, 0, 1, ImPlotCond_Once);
+            if (ImPlot::BeginPlot("Error"))
+            {
+                ImPlot::PlotLine("##error", error_plotting.data(), static_cast<int>(error_plotting.size()));
+                ImPlot::EndPlot();
+            }
         }
         ImGui::End();
         
         if (running)
         {
             if (som->get_current_epoch() < som->get_max_epochs())
+            {
                 som->train_epoch(initial_learn_rate, topology_function.get());
+                error_plotting.push_back(som->topological_error(current_data_file));
+            }
         }
         
         
@@ -220,24 +233,6 @@ namespace assign3
         fr2d.render();
     }
     
-    void renderer_t::update_graphics()
-    {
-        // find the min x / y for the currently drawn som as positions may depend on type.
-        const auto x_comparator = [](const auto& a, const auto& b) {
-            return a.get_x() < b.get_x();
-        };
-        const auto y_comparator = [](const auto& a, const auto& b) {
-            return a.get_y() < b.get_y();
-        };
-        const auto& som_neurons = som->get_array().get_map();
-        auto min_x = std::min_element(som_neurons.begin(), som_neurons.end(), x_comparator)->get_x();
-        auto max_x = std::max_element(som_neurons.begin(), som_neurons.end(), x_comparator)->get_x();
-        auto min_y = std::min_element(som_neurons.begin(), som_neurons.end(), y_comparator)->get_y();
-        auto max_y = std::max_element(som_neurons.begin(), som_neurons.end(), y_comparator)->get_y();
-        draw_width = (max_x - min_x);
-        draw_height = (max_y - min_y);
-    }
-    
     std::vector<float> renderer_t::get_neuron_activations(const data_file_t& file)
     {
         static std::vector<float> closest_type;
@@ -248,6 +243,9 @@ namespace assign3
         for (auto [i, v] : blt::enumerate(som->get_array().get_map()))
         {
             auto half = som->find_closest_neighbour_distance(i) / at_distance_measurement;
+//            auto sigma = std::sqrt(-(half * half) / (2 * std::log(requested_activation)));
+//            auto r = 1 / (2 * sigma * sigma);
+//
             auto scale = topology_function->scale(half, requested_activation);
             for (const auto& data : file.data_points)
             {

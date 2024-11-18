@@ -29,7 +29,7 @@ namespace assign3
     class som_t
     {
         public:
-            som_t(const data_file_t& file, blt::size_t width, blt::size_t height, blt::size_t max_epochs);
+            som_t(const data_file_t& file, blt::size_t width, blt::size_t height, blt::size_t max_epochs, distance_function_t* dist_func, shape_t shape);
             
             blt::size_t get_closest_neuron(const std::vector<Scalar>& data);
             
@@ -38,6 +38,8 @@ namespace assign3
             void train_epoch(Scalar initial_learn_rate, topology_function_t* basis_func);
             
             blt::vec2 get_topological_position(const std::vector<Scalar>& data);
+            
+            Scalar topological_error(const data_file_t& data);
             
             [[nodiscard]] const array_t& get_array() const
             { return array; }
@@ -53,6 +55,7 @@ namespace assign3
             data_file_t file;
             blt::size_t current_epoch = 0;
             blt::size_t max_epochs;
+            distance_function_t* dist_func;
     };
     
 }

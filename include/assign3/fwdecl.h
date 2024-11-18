@@ -30,15 +30,19 @@ namespace assign3
     inline constexpr blt::i32 RENDER_2D = 0x0;
     inline constexpr blt::i32 RENDER_3D = 0x1;
     
-    enum class shape : blt::i32
+    enum class shape_t : blt::i32
     {
-        GRID = RENDER_2D,
-        GRID_WRAP = RENDER_2D,
-        GRID_OFFSET = RENDER_2D,
-        GRID_OFFSET_WRAP = RENDER_2D,
-        GAUSSIAN_DIST = RENDER_2D,
-        TOROIDAL = RENDER_3D,
-        CYLINDER = RENDER_3D
+        GRID,
+        GRID_WRAP,
+        GRID_OFFSET,
+        GRID_OFFSET_WRAP
+    };
+    
+    inline std::array<std::string, 4> shape_names{
+        "Grid",
+        "Edge Wrapped Grid",
+        "Honey Comb Grid",
+        "Edge Wrapped Honey Comb"
     };
     
     enum class debug_type
@@ -47,7 +51,7 @@ namespace assign3
         DISTANCE
     };
     
-    inline std::array<std::string, 2> debug_names {
+    inline std::array<std::string, 2> debug_names{
             "Distance to Datapoint",
             "Distance to Neighbours"
     };

@@ -42,17 +42,30 @@ namespace assign3
             
             [[nodiscard]] Scalar dist(const std::vector<Scalar>& X) const;
             
-            [[nodiscard]] inline const std::vector<Scalar>& get_data() const
+            neuron_t& set_activation(Scalar act)
+            {
+                activation = act;
+                return *this;
+            }
+            
+            void activate(Scalar act)
+            { activation += act; }
+            
+            [[nodiscard]] const std::vector<Scalar>& get_data() const
             { return data; }
             
-            [[nodiscard]] inline Scalar get_x() const
+            [[nodiscard]] Scalar get_x() const
             { return x_pos; }
             
-            [[nodiscard]] inline Scalar get_y() const
+            [[nodiscard]] Scalar get_y() const
             { return y_pos; }
             
+            [[nodiscard]] Scalar get_activation() const
+            { return activation; }
+        
         private:
             Scalar x_pos, y_pos;
+            Scalar activation = 0;
             std::vector<Scalar> data;
     };
     
