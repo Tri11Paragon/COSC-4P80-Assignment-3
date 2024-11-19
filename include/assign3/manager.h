@@ -90,21 +90,7 @@ namespace assign3
             
             void regenerate_network()
             {
-                switch (static_cast<shape_t>(selected_som_mode))
-                {
-                    case shape_t::GRID:
-                        distance_function = std::make_unique<euclidean_distance_function_t>();
-                        break;
-                    case shape_t::GRID_WRAP:
-                        distance_function = std::make_unique<toroidal_euclidean_distance_function_t>(som_width, som_height);
-                        break;
-                    case shape_t::GRID_OFFSET:
-                        distance_function = std::make_unique<axial_distance_function_t>();
-                        break;
-                    case shape_t::GRID_OFFSET_WRAP:
-                        distance_function = std::make_unique<toroidal_axial_distance_function_t>(som_width, som_height);
-                        break;
-                }
+                distance_function = distance_function_t::from_shape(static_cast<shape_t>(selected_som_mode), som_width, som_height);
                 som = std::make_unique<som_t>(motor_data.files[currently_selected_network], som_width, som_height, max_epochs,
                                               distance_function.get(), topology_function.get(), static_cast<shape_t>(selected_som_mode),
                                               static_cast<init_t>(selected_init_type), normalize_init);

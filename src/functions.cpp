@@ -88,4 +88,20 @@ namespace assign3
         Scalar total = x_min + y_min;
         return total - std::min(x_min, y_min);
     }
+    
+    std::unique_ptr<distance_function_t> distance_function_t::from_shape(shape_t shape, blt::u32 som_width, blt::u32 som_height)
+    {
+        switch (shape)
+        {
+            case shape_t::GRID:
+                return std::make_unique<euclidean_distance_function_t>();
+            case shape_t::GRID_WRAP:
+                return std::make_unique<toroidal_euclidean_distance_function_t>(som_width, som_height);
+            case shape_t::GRID_OFFSET:
+                return std::make_unique<axial_distance_function_t>();
+            case shape_t::GRID_OFFSET_WRAP:
+                return std::make_unique<toroidal_axial_distance_function_t>(som_width, som_height);
+        }
+        return nullptr;
+    }
 }

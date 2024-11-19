@@ -225,9 +225,15 @@ namespace assign3
                 ImPlot::EndPlot();
             }
             ImPlot::SetNextAxesLimits(0, max_epochs, 0, 1, ImPlotCond_Once);
-            if (ImPlot::BeginPlot("Error"))
+            if (ImPlot::BeginPlot("TError"))
             {
-                ImPlot::PlotLine("##error", som->get_topological_errors().data(), static_cast<int>(som->get_topological_errors().size()));
+                ImPlot::PlotLine("##Terror", som->get_topological_errors().data(), static_cast<int>(som->get_topological_errors().size()));
+                ImPlot::EndPlot();
+            }
+            ImPlot::SetNextAxesLimits(0, max_epochs, 0, static_cast<int>(current_data_file.data_points.size()), ImPlotCond_Once);
+            if (ImPlot::BeginPlot("QError"))
+            {
+                ImPlot::PlotLine("##Qerror", som->get_quantization_errors().data(), static_cast<int>(som->get_quantization_errors().size()));
                 ImPlot::EndPlot();
             }
         }

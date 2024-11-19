@@ -22,6 +22,7 @@
 #include <blt/iterator/enumerate.h>
 #include <blt/std/logging.h>
 #include <cstring>
+#include "blt/iterator/zip.h"
 
 namespace assign3
 {
@@ -34,6 +35,7 @@ namespace assign3
         for (auto& v : array.get_map())
             v.randomize(std::random_device{}(), init, normalize, file);
         topological_errors.push_back(topological_error());
+        quantization_errors.push_back(quantization_error());
     }
     
     void som_t::train_epoch(Scalar initial_learn_rate)
@@ -66,6 +68,7 @@ namespace assign3
         }
         current_epoch++;
         topological_errors.push_back(topological_error());
+        quantization_errors.push_back(quantization_error());
     }
     
     blt::size_t som_t::get_closest_neuron(const std::vector<Scalar>& data)
@@ -220,6 +223,50 @@ namespace assign3
         out << "epoch,error\n";
         for (auto [i, v] : blt::enumerate(topological_errors))
             out << i << ',' << v << '\n';
+    }
+    
+    void som_t::write_quantization_errors(std::ostream& out)
+    {
+        out << "epoch,error\n";
+        for (auto [i, v] : blt::enumerate(quantization_errors))
+            out << i << ',' << v << '\n';
+    }
+    
+    void som_t::write_all_errors(std::ostream& out)
+    {
+        out << "epoch,topology error,quantization error\n";
+        for (auto [i, v] : blt::in_pairs(topological_errors, quantization_errors).enumerate())
+        {
+            auto [t, q] = v;
+            out << i << ',' << t << ',' << q << '\n';
+        }
+    }
+    
+    Scalar som_t::quantization_error()
+    {
+        Scalar incorrect = 0;
+        
+        for (const auto& point : file.data_points)
+        {
+            const auto& nearest = array.get_map()[get_closest_neuron(point.bins)];
+            
+            bool is_neural = nearest.get_activation() > -quantization_distance && nearest.get_activation() < quantization_distance;
+            
+            if (is_neural)
+            {
+                incorrect++;
+                continue;
+            }
+            
+            bool is_bad = nearest.get_activation() <= -quantization_distance;
+            bool is_good = nearest.get_activation() >= quantization_distance;
+            
+            if ((is_bad && point.is_bad) || (is_good && !point.is_bad))
+                continue;
+            incorrect++;
+        }
+        
+        return incorrect;
     }
     
     

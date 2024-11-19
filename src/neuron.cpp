@@ -34,7 +34,7 @@ namespace assign3
                 break;
             case init_t::RANDOM_DATA:
             {
-                static std::vector<Scalar> min_values, max_values;
+                static thread_local std::vector<Scalar> min_values, max_values;
                 min_values.clear();
                 max_values.clear();
                 

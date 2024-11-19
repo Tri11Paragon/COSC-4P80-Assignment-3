@@ -42,11 +42,17 @@ namespace assign3
             
             Scalar topological_error();
             
+            Scalar quantization_error();
+            
             void compute_neuron_activations(Scalar distance = 2, Scalar activation = 0.5);
             
             void write_activations(std::ostream& out);
             
             void write_topology_errors(std::ostream& out);
+            
+            void write_quantization_errors(std::ostream& out);
+            
+            void write_all_errors(std::ostream& out);
             
             [[nodiscard]] const array_t& get_array() const
             { return array; }
@@ -59,6 +65,9 @@ namespace assign3
             
             [[nodiscard]] const std::vector<Scalar>& get_topological_errors() const
             { return topological_errors; }
+            
+            [[nodiscard]] const std::vector<Scalar>& get_quantization_errors() const
+            { return quantization_errors; }
         
         private:
             array_t array;
@@ -68,7 +77,11 @@ namespace assign3
             distance_function_t* dist_func;
             topology_function_t* topology_function;
             
+            // normalized value for which below this will be considered neural
+            float quantization_distance = 0.25;
+            
             std::vector<Scalar> topological_errors;
+            std::vector<Scalar> quantization_errors;
     };
     
 }

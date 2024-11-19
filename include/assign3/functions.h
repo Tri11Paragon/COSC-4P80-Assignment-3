@@ -21,6 +21,7 @@
 
 #include <assign3/fwdecl.h>
 #include <blt/std/ranges.h>
+#include <memory>
 
 namespace assign3
 {
@@ -58,6 +59,8 @@ namespace assign3
         [[nodiscard]] virtual Scalar distance(blt::span<const Scalar> x, blt::span<const Scalar> y) const = 0;
         
         virtual ~distance_function_t() = default;
+        
+        static std::unique_ptr<distance_function_t> from_shape(shape_t shape, blt::u32 som_width, blt::u32 som_height);
     };
     
     struct euclidean_distance_function_t : public distance_function_t
