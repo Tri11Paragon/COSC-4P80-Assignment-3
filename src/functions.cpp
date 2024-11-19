@@ -54,4 +54,38 @@ namespace assign3
         Scalar y_min = std::min(y_diff, static_cast<Scalar>(height) - y_diff);
         return std::sqrt(x_min * x_min + y_min * y_min);
     }
+    
+    Scalar axial_distance_function_t::distance(blt::span<const Scalar> x, blt::span<const Scalar> y) const
+    {
+        static thread_local std::vector<Scalar> distances;
+        distances.clear();
+        Scalar total = 0;
+        for (auto [q, r] : blt::in_pairs(x, y))
+        {
+            distances.push_back(std::abs(q - r));
+            total += distances.back();
+        }
+        
+        Scalar min = distances.front();
+        for (auto v : distances)
+            min = std::min(min, v);
+
+        return total - min;
+    }
+    
+    Scalar axial_distance(Scalar q1, Scalar r1, Scalar q2, Scalar r2) {
+        return (std::abs(q1 - q2) + std::abs(r1 - r2) + std::abs((q1 + r1) - (q2 + r2))) / 2;
+    }
+    
+    Scalar toroidal_axial_distance_function_t::distance(blt::span<const Scalar> x, blt::span<const Scalar> y) const
+    {
+        BLT_ASSERT(x.size() == 2 && y.size() == 2);
+        
+        Scalar x_diff = std::abs(x[0] - y[0]);
+        Scalar y_diff = std::abs(x[1] - y[1]);
+        Scalar x_min = std::min(x_diff, static_cast<Scalar>(width) - x_diff);
+        Scalar y_min = std::min(y_diff, static_cast<Scalar>(height) - y_diff);
+        Scalar total = x_min + y_min;
+        return total - std::min(x_min, y_min);
+    }
 }

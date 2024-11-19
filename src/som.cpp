@@ -27,14 +27,16 @@ namespace assign3
 {
     
     som_t::som_t(const data_file_t& file, blt::size_t width, blt::size_t height, blt::size_t max_epochs, distance_function_t* dist_func,
-                 shape_t shape, init_t init, bool normalize):
-            array(file.data_points.begin()->bins.size(), width, height, shape), file(file), max_epochs(max_epochs), dist_func(dist_func)
+                 topology_function_t* topology_function, shape_t shape, init_t init, bool normalize):
+            array(file.data_points.begin()->bins.size(), width, height, shape), file(file), max_epochs(max_epochs), dist_func(dist_func),
+            topology_function(topology_function)
     {
         for (auto& v : array.get_map())
             v.randomize(std::random_device{}(), init, normalize, file);
+        topological_errors.push_back(topological_error());
     }
     
-    void som_t::train_epoch(Scalar initial_learn_rate, topology_function_t* basis_func)
+    void som_t::train_epoch(Scalar initial_learn_rate)
     {
         blt::random::random_t rand{std::random_device{}()};
         std::shuffle(file.data_points.begin(), file.data_points.end(), rand);
@@ -52,18 +54,18 @@ namespace assign3
             auto distance_min = find_closest_neighbour_distance(v0_idx);
             // this will find the required scaling factor to make a point in the middle between v0 and its closest neighbour activate 50%
             // from the perspective of the gaussian function
-            auto scale = basis_func->scale(distance_min * 0.5f, 0.5);
+            auto scale = topology_function->scale(distance_min * 0.5f, 0.5);
             
             for (auto [i, n] : blt::enumerate(array.get_map()))
             {
                 if (i == v0_idx)
                     continue;
-                auto dist = basis_func->call(neuron_t::distance(dist_func, v0, n), time_ratio * scale);
+                auto dist = topology_function->call(neuron_t::distance(dist_func, v0, n), time_ratio * scale);
                 n.update(current_data.bins, dist, eta);
             }
         }
-        
         current_epoch++;
+        topological_errors.push_back(topological_error());
     }
     
     blt::size_t som_t::get_closest_neuron(const std::vector<Scalar>& data)
@@ -139,12 +141,12 @@ namespace assign3
         return (dp1 * p_1) + (dp2 * p_2) + (dp3 * p_3);
     }
     
-    Scalar som_t::topological_error(const data_file_t& data)
+    Scalar som_t::topological_error()
     {
         Scalar total = 0;
         std::vector<std::pair<blt::size_t, Scalar>> distances;
         
-        for (const auto& x : data.data_points)
+        for (const auto& x : file.data_points)
         {
             distances.clear();
             for (const auto& [i, n] : blt::enumerate(array.get_map()))
@@ -171,7 +173,53 @@ namespace assign3
                 total += 1;
         }
         
-        return total / static_cast<Scalar>(data.data_points.size());
+        return total / static_cast<Scalar>(file.data_points.size());
+    }
+    
+    void som_t::compute_neuron_activations(Scalar distance, Scalar activation)
+    {
+        for (auto& n : array.get_map())
+            n.set_activation(0);
+        
+        Scalar min = std::numeric_limits<Scalar>::max();
+        Scalar max = std::numeric_limits<Scalar>::min();
+        
+        for (auto [i, v] : blt::enumerate(array.get_map()))
+        {
+            auto half = find_closest_neighbour_distance(i) / distance;
+//            auto sigma = std::sqrt(-(half * half) / (2 * std::log(requested_activation)));
+//            auto r = 1 / (2 * sigma * sigma);
+//
+            auto scale = topology_function->scale(half, activation);
+            for (const auto& data : file.data_points)
+            {
+                auto ds = topology_function->call(v.dist(data.bins), scale);
+                if (data.is_bad)
+                    v.activate(-ds);
+                else
+                    v.activate(ds);
+            }
+            
+            min = std::min(min, v.get_activation());
+            max = std::max(max, v.get_activation());
+        }
+        
+        for (auto& n : array.get_map())
+            n.set_activation(2 * (n.get_activation() - min) / (max - min) - 1);
+    }
+    
+    void som_t::write_activations(std::ostream& out)
+    {
+        out << "x,y,activation\n";
+        for (const auto& v : array.get_map())
+            out << v.get_x() << ',' << v.get_y() << ',' << v.get_activation() << '\n';
+    }
+    
+    void som_t::write_topology_errors(std::ostream& out)
+    {
+        out << "epoch,error\n";
+        for (auto [i, v] : blt::enumerate(topological_errors))
+            out << i << ',' << v << '\n';
     }
     
     

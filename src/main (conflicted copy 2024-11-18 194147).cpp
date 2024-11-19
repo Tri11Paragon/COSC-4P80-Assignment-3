@@ -60,7 +60,6 @@ void load_data_files(const std::string& str)
 void action_start_graphics(const std::vector<std::string>& argv_vector)
 {
     blt::arg_parse parser{};
-    parser.setHelpExtras("graphics");
     
     parser.addArgument(blt::arg_builder{"--file", "-f"}
                                .setDefault("../data")
@@ -76,7 +75,6 @@ void action_start_graphics(const std::vector<std::string>& argv_vector)
 void action_test(const std::vector<std::string>& argv_vector)
 {
     blt::arg_parse parser{};
-    parser.setHelpExtras("test");
     
     parser.addArgument(blt::arg_builder{"--file", "-f"}
                                .setDefault("../data")
@@ -91,10 +89,7 @@ void action_test(const std::vector<std::string>& argv_vector)
 
 void action_convert(const std::vector<std::string>& argv_vector)
 {
-    blt::arg_parse parser{};
-    parser.setHelpExtras("convert");
-    
-    auto args = parser.parse_args(argv_vector);
+
 }
 
 int main(int argc, const char** argv)
@@ -117,7 +112,7 @@ int main(int argc, const char** argv)
         return 0;
     }
     
-//    argv_vector.erase(argv_vector.begin() + 1);
+    argv_vector.erase(argv_vector.begin() + 1);
     
     auto action = blt::string::toLowerCase(args.get<std::string>("action"));
     if (action == "graphics")

@@ -82,10 +82,6 @@ namespace assign3
             
             void cleanup();
             
-            std::vector<float> get_neuron_activations(const data_file_t& file);
-            
-            static std::vector<float> normalize_data(const std::vector<float>& data);
-            
             void draw_som(neuron_render_info_t info, const std::function<blt::vec4(render_data_t)>& color_func);
             
             void draw_debug(const data_file_t& file);
@@ -97,19 +93,22 @@ namespace assign3
                 switch (static_cast<shape_t>(selected_som_mode))
                 {
                     case shape_t::GRID:
-                    case shape_t::GRID_OFFSET:
                         distance_function = std::make_unique<euclidean_distance_function_t>();
                         break;
-                    case shape_t::GRID_OFFSET_WRAP:
                     case shape_t::GRID_WRAP:
                         distance_function = std::make_unique<toroidal_euclidean_distance_function_t>(som_width, som_height);
                         break;
+                    case shape_t::GRID_OFFSET:
+                        distance_function = std::make_unique<axial_distance_function_t>();
+                        break;
+                    case shape_t::GRID_OFFSET_WRAP:
+                        distance_function = std::make_unique<toroidal_axial_distance_function_t>(som_width, som_height);
+                        break;
                 }
-                error_plotting.clear();
                 som = std::make_unique<som_t>(motor_data.files[currently_selected_network], som_width, som_height, max_epochs,
-                                              distance_function.get(), static_cast<shape_t>(selected_som_mode),
+                                              distance_function.get(), topology_function.get(), static_cast<shape_t>(selected_som_mode),
                                               static_cast<init_t>(selected_init_type), normalize_init);
-                error_plotting.push_back(som->topological_error(motor_data.files[currently_selected_network]));
+                som->compute_neuron_activations();
             }
         
         private:
@@ -117,8 +116,6 @@ namespace assign3
             std::unique_ptr<som_t> som;
             std::unique_ptr<topology_function_t> topology_function;
             std::unique_ptr<distance_function_t> distance_function;
-            
-            std::vector<Scalar> error_plotting;
             
             blt::gfx::font_renderer_t fr2d{};
             blt::gfx::batch_renderer_2d br2d;

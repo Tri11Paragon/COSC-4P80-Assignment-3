@@ -123,8 +123,8 @@ namespace assign3
     {
         using namespace blt::gfx;
         
-        ImGui::ShowDemoWindow();
-        ImPlot::ShowDemoWindow();
+//        ImGui::ShowDemoWindow();
+//        ImPlot::ShowDemoWindow();
         
         if (ImGui::Begin("Controls"))
         {
@@ -137,7 +137,10 @@ namespace assign3
                     regenerate_network();
                 
                 if (ImGui::Button("Run Epoch"))
-                    som->train_epoch(initial_learn_rate, topology_function.get());
+                {
+                    som->train_epoch(initial_learn_rate);
+                    som->compute_neuron_activations();
+                }
                 ImGui::Checkbox("Run to completion", &running);
                 ImGui::Text("Epoch %ld / %ld", som->get_current_epoch(), som->get_max_epochs());
             }
@@ -152,8 +155,9 @@ namespace assign3
                 if (ImGui::ListBox("##InitType", &selected_init_type, get_selection_string, init_names.data(), static_cast<int>(init_names.size())))
                     regenerate_network();
                 ImGui::TextWrapped("Help: %s", init_helps[selected_init_type].c_str());
-                ImGui::Separator();
-                ImGui::Checkbox("Normalize Init Data", &normalize_init);
+                if (ImGui::Checkbox("Normalize Init Data", &normalize_init))
+                    regenerate_network();
+                ImGui::SeparatorText("Som Specifics");
                 if (ImGui::InputInt("SOM Width", &som_width) || ImGui::InputInt("SOM Height", &som_height) ||
                     ImGui::InputInt("Max Epochs", &max_epochs))
                     regenerate_network();
@@ -187,7 +191,11 @@ namespace assign3
                             static std::vector<std::string> names;
                             names.clear();
                             for (blt::size_t i = 0; i < som->get_array().get_map().size(); i++)
-                                names.push_back("Neuron " + std::to_string(i));
+                            {
+                                auto pos = som->get_array().from_index(i);
+                                names.push_back("Neuron " + std::to_string(i) +
+                                                " (" + std::to_string(pos.x()) + ", " + std::to_string(pos.y()) + ")");
+                            }
                             ImGui::Text("Select Neuron");
                             ImGui::ListBox("##SelectNeuron", &selected_neuron, get_selection_string, names.data(), static_cast<int>(names.size()));
                         }
@@ -199,14 +207,17 @@ namespace assign3
         ImGui::End();
         
         auto current_data_file = motor_data.files[currently_selected_network];
-        auto closest_type = get_neuron_activations(current_data_file);
         
         if (ImGui::Begin("Plots & Data"))
         {
             ImPlot::SetNextAxesLimits(0, som_width, 0, som_height, ImPlotCond_Always);
             if (ImPlot::BeginPlot("Activations", ImVec2(-1, 0), ImPlotFlags_NoInputs))
             {
-                auto rev = rotate90Clockwise(closest_type, som_width, som_height);
+                static std::vector<float> activations;
+                activations.clear();
+                for (const auto& n : som->get_array().get_map())
+                    activations.push_back(n.get_activation());
+                auto rev = rotate90Clockwise(activations, som_width, som_height);
 //                auto rev = closest_type;
 //                std::reverse(rev.begin(), rev.end());
                 ImPlot::PlotHeatmap("##data_map", rev.data(), som_height, som_width, 0, 0, "%.1f", ImPlotPoint(0, 0),
@@ -216,7 +227,7 @@ namespace assign3
             ImPlot::SetNextAxesLimits(0, max_epochs, 0, 1, ImPlotCond_Once);
             if (ImPlot::BeginPlot("Error"))
             {
-                ImPlot::PlotLine("##error", error_plotting.data(), static_cast<int>(error_plotting.size()));
+                ImPlot::PlotLine("##error", som->get_topological_errors().data(), static_cast<int>(som->get_topological_errors().size()));
                 ImPlot::EndPlot();
             }
         }
@@ -226,18 +237,17 @@ namespace assign3
         {
             if (som->get_current_epoch() < som->get_max_epochs())
             {
-                som->train_epoch(initial_learn_rate, topology_function.get());
-                error_plotting.push_back(som->topological_error(current_data_file));
+                som->train_epoch(initial_learn_rate);
+                som->compute_neuron_activations();
             }
         }
         
         
         if (!debug_mode)
         {
-            closest_type = normalize_data(closest_type);
             draw_som(neuron_render_info_t{}.set_base_pos({370, 145}).set_neuron_scale(120).set_neuron_padding({5, 5}),
-                     [&closest_type](render_data_t context) {
-                         auto type = closest_type[context.index];
+                     [](render_data_t context) {
+                         auto type = context.neuron.get_activation();
                          return type >= 0 ? blt::make_color(0, type, 0) : blt::make_color(-type, 0, 0);
                      });
         } else
@@ -245,33 +255,6 @@ namespace assign3
         
         br2d.render(0, 0);
         fr2d.render();
-    }
-    
-    std::vector<float> renderer_t::get_neuron_activations(const data_file_t& file)
-    {
-        static std::vector<float> closest_type;
-        closest_type.clear();
-        closest_type.resize(som->get_array().get_map().size());
-        
-        
-        for (auto [i, v] : blt::enumerate(som->get_array().get_map()))
-        {
-            auto half = som->find_closest_neighbour_distance(i) / at_distance_measurement;
-//            auto sigma = std::sqrt(-(half * half) / (2 * std::log(requested_activation)));
-//            auto r = 1 / (2 * sigma * sigma);
-//
-            auto scale = topology_function->scale(half, requested_activation);
-            for (const auto& data : file.data_points)
-            {
-                auto ds = topology_function->call(v.dist(data.bins), scale);
-                if (data.is_bad)
-                    closest_type[i] -= ds;
-                else
-                    closest_type[i] += ds;
-            }
-        }
-        
-        return closest_type;
     }
     
     void renderer_t::draw_debug(const data_file_t& file)
@@ -307,9 +290,8 @@ namespace assign3
                 }
                 
                 const auto& data_point = file.data_points[selected_data_point];
-                auto closest_type = normalize_data(get_neuron_activations(file));
                 draw_som(neuron_render_info_t{}.set_base_pos({370, 145}).set_neuron_scale(120).set_neuron_padding({0, 0}),
-                         [this, &neuron_positions, &data_point, &closest_type](render_data_t context) {
+                         [this, &neuron_positions, &data_point](render_data_t context) {
                              auto half = som->find_closest_neighbour_distance(context.index) / at_distance_measurement;
                              auto scale = topology_function->scale(half, requested_activation);
                              auto ds = topology_function->call(context.neuron.dist(data_point.bins), scale);
@@ -321,7 +303,7 @@ namespace assign3
                              auto text_height = text.getAssociatedText().getTextHeight();
                              text.setPosition(context.neuron_padded - blt::vec2{text_width / 2.0f, text_height / 2.0f}).setZIndex(1);
                              
-                             auto type = closest_type[context.index];
+                             auto type = context.neuron.get_activation();
                              return type >= 0 ? blt::make_color(0, type, 0) : blt::make_color(-type, 0, 0);
                          });
                 
@@ -334,7 +316,6 @@ namespace assign3
                 break;
             case debug_t::DISTANCE:
             {
-                auto closest_type = normalize_data(get_neuron_activations(file));
                 auto& selected_neuron_ref = som->get_array().get_map()[selected_neuron];
                 static std::vector<Scalar> distances_2d;
                 static std::vector<Scalar> distances_nd;
@@ -348,7 +329,7 @@ namespace assign3
                 }
                 
                 draw_som(neuron_render_info_t{}.set_base_pos({370, 145}).set_neuron_scale(120).set_neuron_padding({0, 0}),
-                         [this, &closest_type](render_data_t context) {
+                         [this](render_data_t context) {
                              auto& text = fr2d.render_text(
                                      "2D: " + std::to_string(distances_2d[context.index]) + "\nND: " +
                                      std::to_string(distances_nd[context.index]), 18).setColor(0.2, 0.2, 0.8);
@@ -357,24 +338,11 @@ namespace assign3
                              
                              if (static_cast<blt::size_t>(selected_neuron) == context.index)
                                  return blt::make_color(0, 0, 1);
-                             auto type = closest_type[context.index];
+                             auto type = context.neuron.get_activation();
                              return type >= 0 ? blt::make_color(0, type, 0) : blt::make_color(-type, 0, 0);
                          });
             }
                 break;
         }
-    }
-    
-    std::vector<float> renderer_t::normalize_data(const std::vector<float>& data)
-    {
-        std::vector<float> return_data;
-        auto min_act = *std::min_element(data.begin(), data.end());
-        auto max_act = *std::max_element(data.begin(), data.end());
-        for (auto& v : data)
-        {
-            auto n = 2 * (v - min_act) / (max_act - min_act) - 1;
-            return_data.push_back(n);
-        }
-        return return_data;
     }
 }

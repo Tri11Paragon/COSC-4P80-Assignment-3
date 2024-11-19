@@ -44,8 +44,8 @@ namespace assign3
                     case shape_t::GRID_OFFSET_WRAP:
                         for (blt::size_t j = 0; j < height; j++)
                             for (blt::size_t i = 0; i < width; i++)
-                                map.emplace_back(dimensions, (j % 2 == 0 ? static_cast<Scalar>(i) : static_cast<Scalar>(i) + 0.5f),
-                                                 static_cast<Scalar>(static_cast<double>(j) * (std::sqrt(3) / 2.0)));
+                                map.emplace_back(dimensions, (j % 2 == 0 ? static_cast<Scalar>(i) : static_cast<Scalar>(i) + 0.5f), j);
+                        // static_cast<Scalar>(static_cast<double>(j) * (std::sqrt(3) / 2.0))
                         break;
                 }
             }

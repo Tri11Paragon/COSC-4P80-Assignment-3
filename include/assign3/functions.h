@@ -77,6 +77,23 @@ namespace assign3
             blt::i32 width, height;
     };
     
+    struct axial_distance_function_t : public distance_function_t
+    {
+        [[nodiscard]] Scalar distance(blt::span<const Scalar> x, blt::span<const Scalar> y) const final;
+    };
+    
+    struct toroidal_axial_distance_function_t : public distance_function_t
+    {
+        public:
+            toroidal_axial_distance_function_t(blt::i32 width, blt::i32 height): width(width), height(height)
+            {}
+            
+            [[nodiscard]] Scalar distance(blt::span<const Scalar> x, blt::span<const Scalar> y) const final;
+        
+        private:
+            blt::i32 width, height;
+    };
+    
 }
 
 #endif //COSC_4P80_ASSIGNMENT_3_FUNCTIONS_H
