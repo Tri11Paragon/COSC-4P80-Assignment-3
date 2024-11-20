@@ -34,8 +34,7 @@ namespace assign3
     {
         for (auto& v : array.get_map())
             v.randomize(std::random_device{}(), init, normalize, file);
-        topological_errors.push_back(topological_error());
-        quantization_errors.push_back(quantization_error());
+        compute_errors();
     }
     
     void som_t::train_epoch(Scalar initial_learn_rate)
@@ -67,8 +66,7 @@ namespace assign3
             }
         }
         current_epoch++;
-        topological_errors.push_back(topological_error());
-        quantization_errors.push_back(quantization_error());
+        compute_errors();
     }
     
     blt::size_t som_t::get_closest_neuron(const std::vector<Scalar>& data)
@@ -265,8 +263,15 @@ namespace assign3
                 continue;
             incorrect++;
         }
-        
+
         return incorrect;
+    }
+    
+    void som_t::compute_errors()
+    {
+        compute_neuron_activations();
+        topological_errors.push_back(topological_error());
+        quantization_errors.push_back(quantization_error());
     }
     
     

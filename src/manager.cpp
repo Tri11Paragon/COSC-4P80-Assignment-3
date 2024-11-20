@@ -242,10 +242,7 @@ namespace assign3
         if (running)
         {
             if (som->get_current_epoch() < som->get_max_epochs())
-            {
                 som->train_epoch(initial_learn_rate);
-                som->compute_neuron_activations();
-            }
         }
         
         

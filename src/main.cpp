@@ -10,7 +10,6 @@
 #include <mutex>
 #include <fstream>
 #include <filesystem>
-#include <matplot/matplot.h>
 
 using namespace assign3;
 
@@ -78,11 +77,6 @@ void action_start_graphics(const std::vector<std::string>& argv_vector)
     blt::gfx::init(blt::gfx::window_data{"My Sexy Window", init, update, destroy}.setSyncInterval(1).setMaximized(true));
 }
 
-struct activation
-{
-    Scalar x, y, act;
-};
-
 struct task_t // NOLINT
 {
     data_file_t* file;
@@ -101,7 +95,7 @@ struct task_t // NOLINT
     gaussian_function_t topology_func{};
     std::vector<std::vector<Scalar>> topological_errors{};
     std::vector<std::vector<Scalar>> quantization_errors{};
-    std::vector<std::vector<activation>> activations{};
+    std::vector<std::vector<Scalar>> activations{};
 };
 
 void action_test(const std::vector<std::string>& argv_vector)
@@ -125,7 +119,7 @@ void action_test(const std::vector<std::string>& argv_vector)
     
     static blt::size_t runs = 30;
     
-    for (blt::size_t i = 0; i < std::thread::hardware_concurrency(); i++)
+    for (blt::size_t _ = 0; _ < std::thread::hardware_concurrency(); _++)
     {
         threads.emplace_back([&task_mutex, &tasks]() {
             do
@@ -139,7 +133,7 @@ void action_test(const std::vector<std::string>& argv_vector)
                     tasks.pop_back();
                 }
                 
-                for (blt::size_t i = 0; i < runs; i++)
+                for (blt::size_t run = 0; run < runs; run++)
                 {
                     gaussian_function_t func{};
                     auto dist = distance_function_t::from_shape(task.shape, task.width, task.height);
@@ -147,13 +141,13 @@ void action_test(const std::vector<std::string>& argv_vector)
                                                                          &task.topology_func, task.shape, task.init, false);
                     while (som->get_current_epoch() < som->get_max_epochs())
                         som->train_epoch(task.initial_learn_rate);
-                    som->compute_neuron_activations();
                     
                     task.topological_errors.push_back(som->get_topological_errors());
                     task.quantization_errors.push_back(som->get_quantization_errors());
-                    std::vector<activation> acts;
-                    for (const auto& neuron : som->get_array().get_map())
-                        acts.push_back({neuron.get_x(), neuron.get_y(), neuron.get_activation()});
+                    
+                    std::vector<Scalar> acts;
+                    for (const auto& v : som->get_array().get_map())
+                        acts.push_back(v.get_activation());
                     task.activations.emplace_back(std::move(acts));
                 }
                 std::stringstream paths;
@@ -170,7 +164,7 @@ void action_test(const std::vector<std::string>& argv_vector)
                 
                 std::vector<Scalar> average_topological_errors;
                 std::vector<Scalar> average_quantization_errors;
-                std::vector<activation> average_activations;
+                std::vector<Scalar> average_activations;
                 
                 average_topological_errors.resize(task.topological_errors.begin()->size());
                 average_quantization_errors.resize(task.quantization_errors.begin()->size());
@@ -184,30 +178,30 @@ void action_test(const std::vector<std::string>& argv_vector)
                         average_quantization_errors[index] += v;
                 for (const auto& vec : task.activations)
                     for (auto [index, v] : blt::enumerate(vec))
-                        average_activations[index].act += v.act;
+                        average_activations[index] += v;
                 
-                for (auto& v : average_topological_errors)
-                    v /= static_cast<Scalar>(runs);
-                for (auto& v : average_quantization_errors)
-                    v /= static_cast<Scalar>(runs);
-                for (auto& v : average_activations)
-                    v.act /= static_cast<Scalar>(runs);
+                std::ofstream topological{path + "topological_avg.csv"};
+                std::ofstream quantization{path + "quantization_avg.csv"};
+                std::ofstream activations{path + "activations_avg.csv"};
                 
-                auto f = matplot::figure();
-                f->tiledlayout(2, 1);
-                auto axis = f->add_axes();
-                axis->hold(true);
-                axis->plot(matplot::linspace(0, static_cast<double>(task.max_epochs)), average_topological_errors)->display_name("Topological Error");
-                axis->title("Error");
-                axis->xlabel("Epoch");
-                axis->ylabel("Error");
-                axis->grid(true);
-                axis->plot(matplot::linspace(0, static_cast<double>(task.max_epochs)), average_quantization_errors)->display_name("Quantization Error");
-                f->title("Topological and Quantization Errors, " + std::to_string(runs) + " Runs");
-                
-                f->save((path + "errors_plot.eps"), "postscript");
-                f->save((path + "errors_plot.tex"), "epslatex");
-                f->save((path + "errors_plot.png"), "png");
+                topological << "error\n";
+                quantization << "error\n";
+                for (auto [i, v] : blt::enumerate(average_topological_errors))
+                {
+                    topological << v / static_cast<Scalar>(runs) << '\n';
+                }
+                for (auto [i, v] : blt::enumerate(average_quantization_errors))
+                {
+                    quantization << v / static_cast<Scalar>(runs) << '\n';
+                }
+                for (auto [i, v] : blt::enumerate(average_activations))
+                {
+                    activations << v / static_cast<Scalar>(runs);
+                    if (i % task.width == task.width-1)
+                        activations << '\n';
+                    else
+                        activations << ',';
+                }
                 
                 BLT_INFO("Task '%s' Complete", path.c_str());
                 

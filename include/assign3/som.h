@@ -44,6 +44,8 @@ namespace assign3
             
             Scalar quantization_error();
             
+            void compute_errors();
+            
             void compute_neuron_activations(Scalar distance = 2, Scalar activation = 0.5);
             
             void write_activations(std::ostream& out);
