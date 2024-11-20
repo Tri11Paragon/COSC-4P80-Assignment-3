@@ -21,7 +21,7 @@ if split.lower() == "false":
     fig, ax1 = plt.subplots()
 
     ax1.plot(data1, color='b', label='Topological Error')
-    ax1.set_xlabel('Epochs')
+    ax1.set_xlabel('Epoch')
     ax1.set_ylabel('Error %', color='b')
     ax1.tick_params(axis='y', labelcolor='b')
     ax1.set_ylim(0, 1)
@@ -39,3 +39,23 @@ if split.lower() == "false":
     plt.savefig("errors{}.png".format(bins))
 else:
     plt.plot(data1, color='b', label='Topological Error')
+    plt.xlabel('Epoch')
+    plt.ylabel('Error %', color='b')
+    plt.tick_params(axis='y', labelcolor='b')
+    plt.ylim(0, 1)
+    
+    plt.title("Topological Error (Bins: {})".format(bins))
+    
+    plt.savefig("errors-topological{}.png".format(bins))
+    
+    plt.plot(data2, color='b', label='Quantization Error')
+    plt.xlabel('Epoch')
+    plt.ylabel('Incorrect BMU', color='b')
+    plt.tick_params(axis='y', labelcolor='b')
+    plt.ylim(y_min, y_max)
+    
+    plt.title("Quantization Error (Bins: {})".format(bins))
+    
+    plt.savefig("errors-quantization{}.png".format(bins))
+
+
