@@ -3,10 +3,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 
+from plot_heatmap import subtitle
+
 file1 = sys.argv[1]
 file2 = sys.argv[2]
 bins = sys.argv[3]
 split = sys.argv[4]
+if len(sys.argv) > 4:
+    subtitle = sys.argv[5]
+else:
+    subtitle = ""
 
 df1 = pd.read_csv(file1)
 df2 = pd.read_csv(file2)
@@ -35,6 +41,7 @@ if split.lower() == "false":
     ax2.set_ylim(y_min, y_max)
 
     ax1.set_title('Topological and Quantization Error (Bins: {})'.format(bins))
+    fig.suptitle(subtitle)
 
     plt.savefig("errors{}.png".format(bins))
 else:
@@ -45,7 +52,8 @@ else:
     plt.ylim(0, 1)
     
     plt.title("Topological Error (Bins: {})".format(bins))
-    
+    plt.suptitle(subtitle)
+
     plt.savefig("errors-topological{}.png".format(bins))
     
     plt.plot(data2, color='b', label='Quantization Error')
@@ -55,7 +63,8 @@ else:
     plt.ylim(y_min, y_max)
     
     plt.title("Quantization Error (Bins: {})".format(bins))
-    
+    plt.suptitle(subtitle)
+
     plt.savefig("errors-quantization{}.png".format(bins))
 
 

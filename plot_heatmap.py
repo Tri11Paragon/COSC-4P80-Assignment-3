@@ -7,6 +7,10 @@ import sys
 
 filename = sys.argv[1]
 size = sys.argv[2]
+if len(sys.argv) > 3:
+    subtitle = sys.argv[3]
+else:
+    subtitle = ""
 
 df = pd.read_csv(filename, header=None)
 
@@ -22,6 +26,7 @@ plt.yticks(np.arange(height), np.arange(height))
 plt.xlabel('X Pos')
 plt.ylabel('Y Pos')
 plt.title('Heatmap of Motor Data (Bins: {})'.format(size))
+plt.suptitle(subtitle)
 
 plt.gca().invert_yaxis()
 

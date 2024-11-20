@@ -10,6 +10,32 @@
 #include <mutex>
 #include <fstream>
 #include <filesystem>
+#include <cstdlib>
+
+void plot_heatmap(const std::string& path, const std::string& activations_csv, blt::size_t bin_size, const std::string& subtitle)
+{
+#ifdef __linux__
+    auto pwd = std::filesystem::current_path();
+    if (!blt::string::ends_with(pwd.string(), '/'))
+        pwd += '/';
+    std::string command = "cd '" + path + "' && python3 " + pwd.string() + "plot_heatmap.py '" + activations_csv + "' " + std::to_string(bin_size) + " '" +
+            subtitle + "'";
+    std::system(("sh -c \"" + command + "\"").c_str());
+#endif
+}
+
+void plot_line_graph(const std::string& path, const std::string& topological_csv, const std::string& quantization_csv, blt::size_t bin_size,
+                     const std::string& subtitle)
+{
+#ifdef __linux__
+    auto pwd = std::filesystem::current_path();
+    if (!blt::string::ends_with(pwd.string(), '/'))
+        pwd += '/';
+    std::string command = "cd '" + path + "' && python3 " + pwd.string() + "plot_line_graph.py '" + topological_csv + "' '" + quantization_csv + "' " +
+            std::to_string(bin_size) + " false '" + subtitle + "'";
+    std::system(("sh -c \"" + command + "\"").c_str());
+#endif
+}
 
 using namespace assign3;
 
@@ -197,7 +223,7 @@ void action_test(const std::vector<std::string>& argv_vector)
                 for (auto [i, v] : blt::enumerate(average_activations))
                 {
                     activations << v / static_cast<Scalar>(runs);
-                    if (i % task.width == task.width-1)
+                    if (i % task.width == task.width - 1)
                         activations << '\n';
                     else
                         activations << ',';
@@ -248,6 +274,11 @@ int main(int argc, const char** argv)
     }
 
 //    argv_vector.erase(argv_vector.begin() + 1);
+
+#ifdef __EMSCRIPTEN__
+    action_start_graphics(argv_vector);
+    return 0;
+#endif
     
     auto action = blt::string::toLowerCase(args.get<std::string>("action"));
     if (action == "graphics")
