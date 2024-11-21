@@ -23,11 +23,12 @@ plt.yticks(np.arange(height), np.arange(height))
 
 plt.xlabel('X Pos')
 plt.ylabel('Y Pos')
-plt.suptitle('Heatmap of Motor Data (Bins: {})'.format(size))
-plt.title(subtitle)
+plt.suptitle('Heatmap of Motor Data (Bins: {})'.format(size), fontsize=16)
+plt.title(subtitle, fontsize=11)
 
 plt.gca().invert_yaxis()
 
-plt.colorbar()
+cbar = plt.colorbar()
+cbar.ax.set_ylabel("Bad (Red)    /    Good (Blue)", fontsize=10)
 
-plt.savefig("heatmap.png")
+plt.savefig("heatmap{}.png".format(size))

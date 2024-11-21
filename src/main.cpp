@@ -12,24 +12,29 @@
 #include <filesystem>
 #include <cstdlib>
 
-void plot_heatmap(const std::string& activations_csv, const blt::size_t bin_size, const std::string& subtitle)
+void plot_heatmap(const std::string& path, const std::string& activations_csv, const blt::size_t bin_size, const std::string& subtitle)
 {
 #ifdef __linux__
-    const auto path = std::filesystem::current_path().string();
-    const std::string command = "cd '" + path + "' && python3 ../plot_heatmap.py '" + activations_csv + "' '" + std::to_string(bin_size) + "' '" +
-        subtitle + "'";
+    auto pwd = std::filesystem::current_path().string();
+    if (!blt::string::ends_with(pwd, '/'))
+        pwd += '/';
+    const std::string command = "cd '" + path + "' && python3 '" + pwd + "../plot_heatmap.py' '" + activations_csv + "' '" + std::to_string(bin_size)
+        +
+        "' '" + subtitle + "'";
     BLT_TRACE(command);
     std::system(command.c_str());
 #endif
 }
 
-void plot_line_graph(const std::string& topological_csv, const std::string& quantization_csv, blt::size_t bin_size,
+void plot_line_graph(const std::string& path, const std::string& topological_csv, const std::string& quantization_csv, blt::size_t bin_size,
                      const std::string& subtitle, const std::string& subtitle2)
 {
 #ifdef __linux__
-    const auto path = std::filesystem::current_path().string();
-    const std::string command = "cd '" + path + "' && python3 ../plot_line_graph.py \"" + topological_csv + "\" \"" + quantization_csv + "\" " +
-        std::to_string(bin_size) + " true \"" + subtitle + "\" \"" + subtitle2 + "\"";
+    auto pwd = std::filesystem::current_path().string();
+    if (!blt::string::ends_with(pwd, '/'))
+        pwd += '/';
+    const std::string command = "cd '" + path + "' && python3 '" + pwd + "../plot_line_graph.py' \"" + topological_csv + "\" \"" + quantization_csv +
+        "\" " + std::to_string(bin_size) + " true \"" + subtitle + "\" \"" + subtitle2 + "\"";
     BLT_TRACE(command);
     std::system(command.c_str());
 #endif
@@ -140,7 +145,20 @@ void action_test(const std::vector<std::string>& argv_vector)
     std::vector<std::thread> threads;
     std::mutex task_mutex;
 
-    tasks.emplace_back(&data.files[1], 5, 5, 1000, shape_t::GRID, init_t::RANDOM_DATA, 0.1);
+    for (auto& file : data.files)
+    {
+        for (blt::u32 size = 5; size <= 7; size++)
+        {
+            for (int shape = 0; shape < 4; shape++)
+            {
+                for (int init = 0; init < 3; init++)
+                {
+                    tasks.emplace_back(&file, size, size, 2000, static_cast<shape_t>(shape), static_cast<init_t>(init), 1);
+                }
+            }
+        }
+    }
+
 
     static blt::size_t runs = 30;
 
@@ -206,54 +224,71 @@ void action_test(const std::vector<std::string>& argv_vector)
                     for (auto [index, v] : blt::enumerate(vec))
                         average_activations[index] += v;
 
-                auto min_quant = *std::min_element(average_quantization_errors.begin(), average_quantization_errors.end()) / static_cast<Scalar>(runs);
-                auto max_quant = *std::max_element(average_quantization_errors.begin(), average_quantization_errors.end()) / static_cast<Scalar>(runs);
+                auto min_quant =
+                    *std::min_element(average_quantization_errors.begin(), average_quantization_errors.end()) / static_cast<Scalar>(runs);
+                auto max_quant =
+                    *std::max_element(average_quantization_errors.begin(), average_quantization_errors.end()) / static_cast<Scalar>(runs);
 
                 auto min_topo = *std::min_element(average_topological_errors.begin(), average_topological_errors.end()) / static_cast<Scalar>(runs);
                 auto max_topo = *std::max_element(average_topological_errors.begin(), average_topological_errors.end()) / static_cast<Scalar>(runs);
 
-                std::ofstream topological{path + "topological_avg.csv"};
-                std::ofstream quantization{path + "quantization_avg.csv"};
-                std::ofstream activations_avg{path + "activations_avg.csv"};
-                std::ofstream activations{path + "activations.csv"};
+                {
+                    std::ofstream topological{path + "topological_avg.csv"};
+                    std::ofstream quantization{path + "quantization_avg.csv"};
+                    std::ofstream activations_avg{path + "activations_avg.csv"};
+                    std::ofstream activations{path + "activations.csv"};
 
-                topological << "error\n";
-                quantization << "error\n";
-                for (auto [i, v] : blt::enumerate(average_topological_errors))
-                {
-                    topological << v / static_cast<Scalar>(runs) << '\n';
-                }
-                for (auto [i, v] : blt::enumerate(average_quantization_errors))
-                {
-                    quantization << v / static_cast<Scalar>(runs) << '\n';
-                }
-                for (auto [i, v] : blt::enumerate(average_activations))
-                {
-                    activations_avg << v / static_cast<Scalar>(runs);
-                    if (i % task.width == task.width - 1)
-                        activations_avg << '\n';
-                    else
-                        activations_avg << ',';
+                    topological << "error\n";
+                    quantization << "error\n";
+                    for (auto [i, v] : blt::enumerate(average_topological_errors))
+                    {
+                        topological << v / static_cast<Scalar>(runs) << '\n';
+                    }
+                    for (auto [i, v] : blt::enumerate(average_quantization_errors))
+                    {
+                        quantization << v / static_cast<Scalar>(runs) << '\n';
+                    }
+                    for (auto [i, v] : blt::enumerate(average_activations))
+                    {
+                        activations_avg << v / static_cast<Scalar>(runs);
+                        if (i % task.width == task.width - 1)
+                            activations_avg << '\n';
+                        else
+                            activations_avg << ',';
+                    }
+                    for (auto [i, v] : blt::enumerate(task.activations.front()))
+                    {
+                        activations << v;
+                        if (i % task.width == task.width - 1)
+                            activations << '\n';
+                        else
+                            activations << ',';
+                    }
                 }
 
-                for (auto [i, v] : blt::enumerate(task.activations.front()))
-                {
-                    activations << v / static_cast<Scalar>(runs);
-                    if (i % task.width == task.width - 1)
-                        activations << '\n';
-                    else
-                        activations << ',';
-                }
-
-                plot_heatmap(path + "activations.csv", task.file->data_points.front().bins.size(),
+                plot_heatmap(path, "activations.csv", task.file->data_points.front().bins.size(),
                              std::to_string(task.width) + "x" + std::to_string(task.height) + " " += shape_name + ", " += init_name + ", " +
-                             std::to_string(task.max_epochs) + " Epochs");
+                             std::to_string(
+                                 task.max_epochs) +
+                             " Epochs");
 
-                plot_line_graph(path + "topological_avg.csv", path + "quantization_avg.csv", task.file->data_points.front().bins.size(),
+                plot_line_graph(path, "topological_avg.csv", "quantization_avg.csv", task.file->data_points.front().bins.size(),
                                 std::to_string(task.width) + "x" + std::to_string(task.height) + " " += shape_name + ", " += init_name + ", Min: " +
-                                std::to_string(min_topo) + ", Max: " + std::to_string(max_topo) + ", " + std::to_string(task.max_epochs) + " Epochs",
+                                std::to_string(
+                                    min_topo) +
+                                ", Max: " +
+                                std::to_string(
+                                    max_topo) +
+                                ", " + std::to_string(
+                                    task.max_epochs) + " Epochs",
                                 std::to_string(task.width) + "x" + std::to_string(task.height) + " " += shape_name + ", " += init_name + ", Min: " +
-                                std::to_string(min_quant) + ", Max: " + std::to_string(max_quant) + ", " + std::to_string(task.max_epochs) +
+                                std::to_string(
+                                    min_quant) +
+                                ", Max: " +
+                                std::to_string(
+                                    max_quant) +
+                                ", " + std::to_string(
+                                    task.max_epochs) +
                                 " Epochs");
 
                 BLT_INFO("Task '%s' Complete", path.c_str());

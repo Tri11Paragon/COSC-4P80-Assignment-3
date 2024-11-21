@@ -15,16 +15,6 @@ else:
     subtitle1 = ""
     subtitle2 = ""
 
-print(file1)
-print(file2)
-dir_path = os.path.dirname(os.path.realpath(__file__))
-cwd = os.getcwd()
-print(dir_path)
-print(cwd)
-
-with open(file1, "r+") as f:
-    print(f.name)
-
 df1 = pd.read_csv(file1)
 df2 = pd.read_csv(file2)
 
@@ -62,8 +52,8 @@ else:
     plt.tick_params(axis='y', labelcolor='b')
     plt.ylim(0, 1)
     
-    plt.suptitle("Topological Error (Bins: {})".format(bins))
-    plt.title(subtitle1)
+    plt.suptitle("Topological Error (Bins: {})".format(bins), fontsize=16)
+    plt.title(subtitle1, fontsize=11)
 
     plt.savefig("errors-topological{}.png".format(bins))
     
@@ -73,8 +63,8 @@ else:
     plt.tick_params(axis='y', labelcolor='b')
     plt.ylim(y_min, y_max)
     
-    plt.suptitle("Quantization Error (Bins: {})".format(bins))
-    plt.title(subtitle2)
+    plt.suptitle("Quantization Error (Bins: {})".format(bins), fontsize=16)
+    plt.title(subtitle2, fontsize=11)
 
     plt.savefig("errors-quantization{}.png".format(bins))
 

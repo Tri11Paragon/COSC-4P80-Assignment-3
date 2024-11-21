@@ -1,6 +1,9 @@
 { pkgs ? (import <nixpkgs> { 
     config.allowUnfree = true;
     config.segger-jlink.acceptLicense = true; 
+}), customPkgs ? (import /home/brett/my-nixpkgs {
+	config.allowUnfree = true;
+    config.segger-jlink.acceptLicense = true;
 }), ... }:
 pkgs.mkShell
 {
@@ -10,7 +13,8 @@ pkgs.mkShell
 		clang
 		emscripten
 		ninja
-		jetbrains.clion
+		customPkgs.jetbrains.clion
+		#clion = import ~/my-nixpkgs/pkgs/applications/editors/jetbrains {};
 		renderdoc
 		valgrind
 	];
