@@ -167,7 +167,7 @@ namespace assign3
             }
             
             // we can assert the neurons are neighbours if the distance between the BMUs and the nearest neighbour are equal.
-            auto min_distances = neuron_t::distance(dist_func, array.get_map()[min1.first], array.get_map()[min2.first]);
+            const auto min_distances = neuron_t::distance(dist_func, array.get_map()[min1.first], array.get_map()[min2.first]);
             auto neighbour_distances = find_closest_neighbour_distance(min1.first);
             
             if (!blt::f_equal(min_distances, neighbour_distances))
@@ -187,15 +187,15 @@ namespace assign3
         
         for (auto [i, v] : blt::enumerate(array.get_map()))
         {
-            auto half = find_closest_neighbour_distance(i) / distance;
+            const auto half = find_closest_neighbour_distance(i) / distance;
 //            auto sigma = std::sqrt(-(half * half) / (2 * std::log(requested_activation)));
 //            auto r = 1 / (2 * sigma * sigma);
 //
-            auto scale = topology_function->scale(half, activation);
-            for (const auto& data : file.data_points)
+            const auto scale = topology_function->scale(half, activation);
+            for (const auto& [is_bad, bins] : file.data_points)
             {
-                auto ds = topology_function->call(v.dist(data.bins), scale);
-                if (data.is_bad)
+                const auto ds = topology_function->call(v.dist(bins), scale);
+                if (is_bad)
                     v.activate(-ds);
                 else
                     v.activate(ds);
