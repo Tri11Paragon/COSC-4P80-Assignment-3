@@ -64,9 +64,9 @@ namespace assign3
     };
     
     inline std::array<std::string, 3> init_names{
-            "Completely Random",
-            "Random Data Based",
-            "Sample Based"
+            "Random Unit",
+            "Random Bounded",
+            "Random Sample"
     };
     
     inline std::array<std::string, 3> init_helps{

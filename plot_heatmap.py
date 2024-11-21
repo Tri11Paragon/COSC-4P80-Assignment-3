@@ -1,8 +1,6 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib
-import matplotlib as mpl
 import sys
 
 filename = sys.argv[1]
@@ -25,8 +23,8 @@ plt.yticks(np.arange(height), np.arange(height))
 
 plt.xlabel('X Pos')
 plt.ylabel('Y Pos')
-plt.title('Heatmap of Motor Data (Bins: {})'.format(size))
-plt.suptitle(subtitle)
+plt.suptitle('Heatmap of Motor Data (Bins: {})'.format(size))
+plt.title(subtitle)
 
 plt.gca().invert_yaxis()
 

@@ -2,17 +2,28 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
-
-from plot_heatmap import subtitle
+import os
 
 file1 = sys.argv[1]
 file2 = sys.argv[2]
 bins = sys.argv[3]
 split = sys.argv[4]
 if len(sys.argv) > 4:
-    subtitle = sys.argv[5]
+    subtitle1 = sys.argv[5]
+    subtitle2 = sys.argv[6]
 else:
-    subtitle = ""
+    subtitle1 = ""
+    subtitle2 = ""
+
+print(file1)
+print(file2)
+dir_path = os.path.dirname(os.path.realpath(__file__))
+cwd = os.getcwd()
+print(dir_path)
+print(cwd)
+
+with open(file1, "r+") as f:
+    print(f.name)
 
 df1 = pd.read_csv(file1)
 df2 = pd.read_csv(file2)
@@ -41,7 +52,7 @@ if split.lower() == "false":
     ax2.set_ylim(y_min, y_max)
 
     ax1.set_title('Topological and Quantization Error (Bins: {})'.format(bins))
-    fig.suptitle(subtitle)
+    fig.suptitle(subtitle1)
 
     plt.savefig("errors{}.png".format(bins))
 else:
@@ -51,8 +62,8 @@ else:
     plt.tick_params(axis='y', labelcolor='b')
     plt.ylim(0, 1)
     
-    plt.title("Topological Error (Bins: {})".format(bins))
-    plt.suptitle(subtitle)
+    plt.suptitle("Topological Error (Bins: {})".format(bins))
+    plt.title(subtitle1)
 
     plt.savefig("errors-topological{}.png".format(bins))
     
@@ -62,8 +73,8 @@ else:
     plt.tick_params(axis='y', labelcolor='b')
     plt.ylim(y_min, y_max)
     
-    plt.title("Quantization Error (Bins: {})".format(bins))
-    plt.suptitle(subtitle)
+    plt.suptitle("Quantization Error (Bins: {})".format(bins))
+    plt.title(subtitle2)
 
     plt.savefig("errors-quantization{}.png".format(bins))
 
