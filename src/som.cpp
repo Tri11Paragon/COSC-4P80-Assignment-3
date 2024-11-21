@@ -47,15 +47,15 @@ namespace assign3
         
         for (auto& current_data : file.data_points)
         {
-            auto v0_idx = get_closest_neuron(current_data.bins);
-            auto v0 = array.get_map()[v0_idx];
-            v0.update(current_data.bins, 1, eta);
+            const auto v0_idx = get_closest_neuron(current_data.bins);
+            auto& v0 = array.get_map()[v0_idx];
+            v0.update(current_data.bins, v0.dist(current_data.bins), eta);
             
             // find the closest neighbour neuron to v0
-            auto distance_min = find_closest_neighbour_distance(v0_idx);
+            const auto distance_min = find_closest_neighbour_distance(v0_idx);
             // this will find the required scaling factor to make a point in the middle between v0 and its closest neighbour activate 50%
             // from the perspective of the gaussian function
-            auto scale = topology_function->scale(distance_min * 0.5f, 0.5);
+            const auto scale = topology_function->scale(distance_min * 0.5f, 0.5);
             
             for (auto [i, n] : blt::enumerate(array.get_map()))
             {
@@ -204,7 +204,7 @@ namespace assign3
             min = std::min(min, v.get_activation());
             max = std::max(max, v.get_activation());
         }
-        
+
         for (auto& n : array.get_map())
             n.set_activation(2 * (n.get_activation() - min) / (max - min) - 1);
     }
