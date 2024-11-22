@@ -63,6 +63,9 @@ void init(const blt::gfx::window_data&)
 void update(const blt::gfx::window_data& window_data)
 {
     using namespace blt::gfx;
+    constexpr float color = 0.15;
+    glClearColor(color, color, color, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     global_matrices.update_perspectives(window_data.width, window_data.height, 90, 0.1, 2000);
 
     camera.update();

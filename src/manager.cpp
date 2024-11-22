@@ -21,6 +21,19 @@
 #include <imgui.h>
 #include <implot.h>
 #include <algorithm>
+#include <fstream>
+#include <blt/std/system.h>
+#include <blt/std/time.h>
+
+void plot_heatmap(const std::string& activations_csv, const blt::size_t bin_size, const std::string& subtitle)
+{
+#ifdef __linux__
+    const std::string command = "python3 ../plot_heatmap.py '" + activations_csv + "' '" + std::to_string(bin_size)
+        + "' '" + subtitle + "'";
+    BLT_TRACE(command);
+    std::system(command.c_str());
+#endif
+}
 
 static void HelpMarker(const std::string& desc)
 {
@@ -42,7 +55,7 @@ const char* get_selection_string(void* user_data, int selection)
 std::vector<assign3::Scalar> rotate90Clockwise(const std::vector<assign3::Scalar>& input, int width, int height)
 {
     std::vector<assign3::Scalar> rotated(width * height);
-    
+
     for (int row = 0; row < height; ++row)
     {
         for (int col = 0; col < width; ++col)
@@ -52,13 +65,12 @@ std::vector<assign3::Scalar> rotate90Clockwise(const std::vector<assign3::Scalar
             rotated[newRow * height + newCol] = input[row * width + col];
         }
     }
-    
+
     return rotated;
 }
 
 namespace assign3
 {
-    
     neuron_render_info_t neuron_render_info_t::fill_screen(renderer_t& renderer, float neuron_scale, float x_padding, float y_padding,
                                                            float w_padding,
                                                            float h_padding)
@@ -66,45 +78,45 @@ namespace assign3
         neuron_render_info_t info;
         info.set_neuron_scale(neuron_scale);
         info.set_base_pos({x_padding, y_padding});
-        
+
         float screen_width = static_cast<float>(blt::gfx::getWindowWidth()) - x_padding - w_padding;
         float screen_height = static_cast<float>(blt::gfx::getWindowHeight()) - y_padding - h_padding;
-        
+
         float neuron_width = static_cast<float>(renderer.som_width) * neuron_scale;
         float neuron_height = static_cast<float>(renderer.som_height) * neuron_scale;
-        
+
         float remain_width = screen_width - neuron_width;
         float remain_height = screen_height - neuron_height;
-        
+
         float remain = std::min(remain_width, remain_height);
-        
+
         info.set_neuron_padding({remain / static_cast<float>(renderer.som_width), remain / static_cast<float>(renderer.som_height)});
-        
+
         return info;
     }
-    
+
     void motor_data_t::update()
     {
         for (const auto& data : files)
             map_files_names.emplace_back(std::to_string(data.data_points.begin()->bins.size()));
     }
-    
+
     void renderer_t::create()
     {
         fr2d.create_default(250, 2048);
         br2d.create();
-        
+
         topology_function = std::make_unique<gaussian_function_t>();
-        
+
         regenerate_network();
     }
-    
+
     void renderer_t::cleanup()
     {
         fr2d.cleanup();
         br2d.cleanup();
     }
-    
+
     void renderer_t::draw_som(neuron_render_info_t info, const std::function<blt::vec4(render_data_t)>& color_func)
     {
         for (const auto& [i, neuron] : blt::enumerate(som->get_array().get_map()))
@@ -113,19 +125,20 @@ namespace assign3
             auto neuron_scaled = neuron_pos * info.neuron_scale;
             auto neuron_offset = neuron_scaled + info.base_pos;
             auto neuron_padded = neuron_offset + neuron_pos * info.neuron_padding;
-            
+
             auto color = color_func({i, neuron, neuron_scaled, neuron_offset, neuron_padded});
             br2d.drawPointInternal(color, blt::gfx::point2d_t{neuron_padded, info.neuron_scale});
+            // br2d.drawPointInternal(blt::make_color(0,0,0), blt::gfx::point2d_t{neuron_padded, info.neuron_scale});
         }
     }
-    
+
     void renderer_t::render()
     {
         using namespace blt::gfx;
-        
-//        ImGui::ShowDemoWindow();
-//        ImPlot::ShowDemoWindow();
-        
+
+        //        ImGui::ShowDemoWindow();
+        //        ImPlot::ShowDemoWindow();
+
         if (ImGui::Begin("Controls"))
         {
             ImGui::SetNextItemOpen(true, ImGuiCond_Appearing);
@@ -135,11 +148,28 @@ namespace assign3
                 if (ImGui::ListBox("##Network Select", &currently_selected_network, get_selection_string, motor_data.map_files_names.data(),
                                    static_cast<int>(motor_data.map_files_names.size())))
                     regenerate_network();
-                
+
                 if (ImGui::Button("Run Epoch"))
                 {
                     som->train_epoch(initial_learn_rate);
                     som->compute_neuron_activations();
+                }
+                if (ImGui::Button("Save"))
+                {
+                    auto text = std::to_string(blt::system::getCurrentTimeMilliseconds()) + "-activations.csv";
+                    {
+                        std::ofstream stream{text};
+
+                        for (auto [i, v] : blt::enumerate(som->get_array().get_map()))
+                        {
+                            stream << v.get_activation();
+                            if (static_cast<blt::i32>(i) % som_width == som_width - 1)
+                                stream << '\n';
+                            else
+                                stream << ',';
+                        }
+                    }
+                    plot_heatmap(text, motor_data.files[currently_selected_network].data_points.front().bins.size(), "");
                 }
                 ImGui::Checkbox("Run to completion", &running);
                 ImGui::Text("Epoch %ld / %ld", som->get_current_epoch(), som->get_max_epochs());
@@ -172,7 +202,7 @@ namespace assign3
                     ImGui::ListBox("##DebugStateSelect", &debug_state, get_selection_string, debug_names.data(), debug_names.size());
                     switch (static_cast<debug_t>(debug_state))
                     {
-                        case debug_t::DATA_POINT:
+                    case debug_t::DATA_POINT:
                         {
                             ImGui::Checkbox("Data Type Color", &draw_colors);
                             ImGui::Checkbox("Data Lines", &draw_data_lines);
@@ -185,8 +215,8 @@ namespace assign3
                             ImGui::ListBox("##SelectDataPoint", &selected_data_point, get_selection_string, names.data(),
                                            static_cast<int>(names.size()));
                         }
-                            break;
-                        case debug_t::DISTANCE:
+                        break;
+                    case debug_t::DISTANCE:
                         {
                             static std::vector<std::string> names;
                             names.clear();
@@ -194,20 +224,20 @@ namespace assign3
                             {
                                 auto pos = som->get_array().from_index(i);
                                 names.push_back("Neuron " + std::to_string(i) +
-                                                " (" + std::to_string(pos.x()) + ", " + std::to_string(pos.y()) + ")");
+                                    " (" + std::to_string(pos.x()) + ", " + std::to_string(pos.y()) + ")");
                             }
                             ImGui::Text("Select Neuron");
                             ImGui::ListBox("##SelectNeuron", &selected_neuron, get_selection_string, names.data(), static_cast<int>(names.size()));
                         }
-                            break;
+                        break;
                     }
                 }
             }
         }
         ImGui::End();
-        
+
         auto current_data_file = motor_data.files[currently_selected_network];
-        
+
         if (ImGui::Begin("Plots & Data"))
         {
             ImPlot::SetNextAxesLimits(0, som_width, 0, som_height, ImPlotCond_Always);
@@ -218,8 +248,8 @@ namespace assign3
                 for (const auto& n : som->get_array().get_map())
                     activations.push_back(n.get_activation());
                 auto rev = rotate90Clockwise(activations, som_width, som_height);
-//                auto rev = closest_type;
-//                std::reverse(rev.begin(), rev.end());
+                //                auto rev = closest_type;
+                //                std::reverse(rev.begin(), rev.end());
                 ImPlot::PlotHeatmap("##data_map", rev.data(), som_height, som_width, 0, 0, "%.1f", ImPlotPoint(0, 0),
                                     ImPlotPoint(som_width, som_height), ImPlotHeatmapFlags_ColMajor);
                 ImPlot::EndPlot();
@@ -238,33 +268,35 @@ namespace assign3
             }
         }
         ImGui::End();
-        
+
         if (running)
         {
             if (som->get_current_epoch() < som->get_max_epochs())
                 som->train_epoch(initial_learn_rate);
         }
-        
-        
+
+
         if (!debug_mode)
         {
             draw_som(neuron_render_info_t{}.set_base_pos({370, 145}).set_neuron_scale(120).set_neuron_padding({5, 5}),
-                     [](render_data_t context) {
+                     [](render_data_t context)
+                     {
                          auto type = context.neuron.get_activation();
                          return type >= 0 ? blt::make_color(0, type, 0) : blt::make_color(-type, 0, 0);
                      });
-        } else
+        }
+        else
             draw_debug(current_data_file);
-        
+
         br2d.render(0, 0);
         fr2d.render();
     }
-    
+
     void renderer_t::draw_debug(const data_file_t& file)
     {
         switch (static_cast<debug_t>(debug_state))
         {
-            case debug_t::DATA_POINT:
+        case debug_t::DATA_POINT:
             {
                 std::vector<blt::vec2> data_positions;
                 std::vector<blt::vec2> neuron_positions;
@@ -291,61 +323,63 @@ namespace assign3
                     }
                     br2d.drawRectangleInternal(color, blt::gfx::rectangle2d_t{pos, blt::vec2{8, 8}}, z_index);
                 }
-                
+
                 const auto& data_point = file.data_points[selected_data_point];
                 draw_som(neuron_render_info_t{}.set_base_pos({370, 145}).set_neuron_scale(120).set_neuron_padding({0, 0}),
-                         [this, &neuron_positions, &data_point](render_data_t context) {
+                         [this, &neuron_positions, &data_point](render_data_t context)
+                         {
                              auto half = som->find_closest_neighbour_distance(context.index) / at_distance_measurement;
                              auto scale = topology_function->scale(half, requested_activation);
                              auto ds = topology_function->call(context.neuron.dist(data_point.bins), scale);
-                             
+
                              if (draw_data_lines)
                                  neuron_positions.push_back(context.neuron_padded);
                              auto& text = fr2d.render_text(std::to_string(ds), 18).setColor(0.2, 0.2, 0.8);
                              auto text_width = text.getAssociatedText().getTextWidth();
                              auto text_height = text.getAssociatedText().getTextHeight();
                              text.setPosition(context.neuron_padded - blt::vec2{text_width / 2.0f, text_height / 2.0f}).setZIndex(1);
-                             
+
                              auto type = context.neuron.get_activation();
                              return type >= 0 ? blt::make_color(0, type, 0) : blt::make_color(-type, 0, 0);
                          });
-                
+
                 if (draw_data_lines)
                 {
                     for (const auto& neuron : neuron_positions)
                         br2d.drawLineInternal(blt::make_color(1, 1, 0), blt::gfx::line2d_t{neuron, data_positions[selected_data_point]}, 1);
                 }
             }
-                break;
-            case debug_t::DISTANCE:
+            break;
+        case debug_t::DISTANCE:
             {
                 auto& selected_neuron_ref = som->get_array().get_map()[selected_neuron];
                 static std::vector<Scalar> distances_2d;
                 static std::vector<Scalar> distances_nd;
                 distances_2d.clear();
                 distances_nd.clear();
-                
+
                 for (const auto& n : som->get_array().get_map())
                 {
                     distances_2d.push_back(neuron_t::distance(distance_function.get(), selected_neuron_ref, n));
                     distances_nd.push_back(selected_neuron_ref.dist(n.get_data()));
                 }
-                
+
                 draw_som(neuron_render_info_t{}.set_base_pos({370, 145}).set_neuron_scale(120).set_neuron_padding({0, 0}),
-                         [this](render_data_t context) {
+                         [this](render_data_t context)
+                         {
                              auto& text = fr2d.render_text(
-                                     "2D: " + std::to_string(distances_2d[context.index]) + "\nND: " +
-                                     std::to_string(distances_nd[context.index]), 18).setColor(0.2, 0.2, 0.8);
+                                 "2D: " + std::to_string(distances_2d[context.index]) + "\nND: " +
+                                 std::to_string(distances_nd[context.index]), 18).setColor(0.2, 0.2, 0.8);
                              auto text_width = text.getAssociatedText().getTextWidth();
                              text.setPosition(context.neuron_padded - blt::vec2{text_width / 2.0f, 0}).setZIndex(1);
-                             
+
                              if (static_cast<blt::size_t>(selected_neuron) == context.index)
                                  return blt::make_color(0, 0, 1);
                              auto type = context.neuron.get_activation();
                              return type >= 0 ? blt::make_color(0, type, 0) : blt::make_color(-type, 0, 0);
                          });
             }
-                break;
+            break;
         }
     }
 }

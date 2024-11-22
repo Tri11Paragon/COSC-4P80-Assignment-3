@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AnalysisUIOptions">
+    <option name="ANALYZE_INJECTED_CODE" value="false" />
+    <option name="SCOPE_TYPE" value="3" />
+  </component>
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="BackendCodeEditorMiscSettings">
+    <option name="/Default/RiderDebugger/RiderRestoreDecompile/RestoreDecompileSetting/@EntryValue" value="false" type="bool" />
+    <option name="/Default/Housekeeping/GlobalSettingsUpgraded/IsUpgraded/@EntryValue" value="true" type="bool" />
+    <option name="/Default/Housekeeping/FeatureSuggestion/FeatureSuggestionManager/DisabledSuggesters/=SwitchToGoToActionSuggester/@EntryIndexedValue" value="true" type="bool" />
+    <option name="/Default/Environment/Hierarchy/GeneratedFilesCacheKey/Timestamp/@EntryValue" value="18" type="long" />
+    <option name="/Default/Housekeeping/OptionsDialog/SelectedPageId/@EntryValue" value="CppFormatterOtherPage" type="string" />
+  </component>
+  <component name="CMakePresetLoader">{
+  &quot;useNewFormat&quot;: true
+}</component>
+  <component name="CMakeProjectFlavorService">
+    <option name="flavorId" value="CMakePlainProjectFlavor" />
+  </component>
+  <component name="CMakeReloadState">
+    <option name="reloaded" value="true" />
+  </component>
+  <component name="CMakeRunConfigurationManager">
+    <generated>
+      <config projectName="COSC-4P80-Assignment-3" targetName="BLT_WITH_GRAPHICS" />
+      <config projectName="COSC-4P80-Assignment-3" targetName="freetype" />
+      <config projectName="COSC-4P80-Assignment-3" targetName="BLT" />
+      <config projectName="COSC-4P80-Assignment-3" targetName="COSC-4P80-Assignment-3" />
+    </generated>
+  </component>
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" />
+      <configuration PROFILE_NAME="Release" ENABLED="true" CONFIG_NAME="Release" />
+      <configuration PROFILE_NAME="RelWithDebInfo" ENABLED="true" CONFIG_NAME="RelWithDebInfo" />
+      <configuration PROFILE_NAME="RelWithDebInfo Addrsan" ENABLED="true" CONFIG_NAME="RelWithDebInfo" GENERATION_OPTIONS="-DENABLE_ADDRSAN=ON -DENABLE_UBSAN=ON" />
+      <configuration PROFILE_NAME="RelWithDebInfo ubsan" ENABLED="true" CONFIG_NAME="RelWithDebInfo" GENERATION_OPTIONS="-DENABLE_UBSAN=ON" />
+      <configuration PROFILE_NAME="Debug Addrsan" ENABLED="true" CONFIG_NAME="Debug" GENERATION_OPTIONS="-DENABLE_ADDRSAN=ON" />
+      <configuration PROFILE_NAME="RelWithDebInfo tsan" ENABLED="true" CONFIG_NAME="RelWithDebInfo" GENERATION_OPTIONS="-DENABLE_TSAN=ON" />
+    </configurations>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="df4fb81f-8c9e-43af-9712-6ff8baeb587a" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/editor.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/editor.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/blt-with-graphics" beforeDir="false" afterPath="$PROJECT_DIR$/lib/blt-with-graphics" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/blt-with-graphics/build_emscript.sh" beforeDir="false" afterPath="$PROJECT_DIR$/lib/blt-with-graphics/build_emscript.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/blt-with-graphics/libraries/BLT" beforeDir="false" afterPath="$PROJECT_DIR$/lib/blt-with-graphics/libraries/BLT" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/blt-with-graphics/libraries/BLT/libraries/parallel-hashmap" beforeDir="false" afterPath="$PROJECT_DIR$/lib/blt-with-graphics/libraries/BLT/libraries/parallel-hashmap" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/blt-with-graphics/libraries/BLT/libraries/parallel-hashmap/examples/llil_utils/gen-llil.pl" beforeDir="false" afterPath="$PROJECT_DIR$/lib/blt-with-graphics/libraries/BLT/libraries/parallel-hashmap/examples/llil_utils/gen-llil.pl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/blt-with-graphics/libraries/BLT/libraries/parallel-hashmap/examples/llil_utils/gen_files" beforeDir="false" afterPath="$PROJECT_DIR$/lib/blt-with-graphics/libraries/BLT/libraries/parallel-hashmap/examples/llil_utils/gen_files" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/blt-with-graphics/libraries/BLT/libraries/parallel-hashmap/examples/llil_utils/run_llil4map" beforeDir="false" afterPath="$PROJECT_DIR$/lib/blt-with-graphics/libraries/BLT/libraries/parallel-hashmap/examples/llil_utils/run_llil4map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/blt-with-graphics/libraries/BLT/libraries/parallel-hashmap/phmap_lldb.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/blt-with-graphics/libraries/BLT/libraries/parallel-hashmap/phmap_lldb.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/blt-with-graphics/resources/fonts/a.out" beforeDir="false" afterPath="$PROJECT_DIR$/lib/blt-with-graphics/resources/fonts/a.out" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+    <option name="indexerUseModules" value="false" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Release" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/include/assign3/array.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/include/assign3/file.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/include/assign3/functions.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/include/assign3/fwdecl.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/include/assign3/manager.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/include/assign3/neuron.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/include/assign3/som.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/lib/blt-with-graphics/include/blt/gfx/font/font_awesome_defines.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/lib/blt-with-graphics/include/blt/gfx/renderer/font_renderer.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/lib/blt-with-graphics/libraries/BLT/include/blt/math/vectors.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/lib/blt-with-graphics/libraries/BLT/include/blt/std/ranges.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/array.cpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/file.cpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/functions.cpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/main.cpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/manager.cpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/neuron.cpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/som.cpp" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectApplicationVersion">
+    <option name="ide" value="CLion" />
+    <option name="majorVersion" value="2024" />
+    <option name="minorVersion" value="1.3" />
+    <option name="productBranch" value="Classic" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7
+}</component>
+  <component name="ProjectId" id="2oG5NNX4GedKhxLJDuzQ5OR5kr5" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;CMake Application.Assign3 Tests.executor&quot;: &quot;Run&quot;,
+    &quot;CMake Application.COSC-4P80-Assignment-3.executor&quot;: &quot;Run&quot;,
+    &quot;NIXITCH_NIXPKGS_CONFIG&quot;: &quot;/etc/nix/nixpkgs-config.nix&quot;,
+    &quot;NIXITCH_NIX_CONF_DIR&quot;: &quot;&quot;,
+    &quot;NIXITCH_NIX_OTHER_STORES&quot;: &quot;&quot;,
+    &quot;NIXITCH_NIX_PATH&quot;: &quot;/home/brett/.nix-defexpr/channels:nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixos:nixos-config=/etc/nixos/configuration.nix:/nix/var/nix/profiles/per-user/root/channels&quot;,
+    &quot;NIXITCH_NIX_PROFILES&quot;: &quot;/run/current-system/sw /nix/var/nix/profiles/default /etc/profiles/per-user/brett /home/brett/.local/state/nix/profile /nix/profile /home/brett/.nix-profile&quot;,
+    &quot;NIXITCH_NIX_REMOTE&quot;: &quot;&quot;,
+    &quot;NIXITCH_NIX_USER_PROFILE_DIR&quot;: &quot;/nix/var/nix/profiles/per-user/brett&quot;,
+    &quot;RunOnceActivity.RadMigrateCodeStyle&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.west.config.association.type.startup.service&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;cf.advertisement.text.has.clang-format&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/brett/Documents/Brock/CS 4P80/COSC-4P80-Assignment-3&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;CMakeSettings&quot;,
+    &quot;structure.view.defaults.are.configured&quot;: &quot;true&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/lib/blt-with-graphics/include/blt/gfx/font" />
+    </key>
+  </component>
+  <component name="RunManager" selected="CMake Application.COSC-4P80-Assignment-3">
+    <configuration name="Assign3 Tests" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="test" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="COSC-4P80-Assignment-3" TARGET_NAME="COSC-4P80-Assignment-3" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="COSC-4P80-Assignment-3" RUN_TARGET_NAME="COSC-4P80-Assignment-3">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="BLT" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="COSC-4P80-Assignment-3" TARGET_NAME="BLT" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="BLT_WITH_GRAPHICS" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="COSC-4P80-Assignment-3" TARGET_NAME="BLT_WITH_GRAPHICS" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="COSC-4P80-Assignment-3" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="graphics" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="COSC-4P80-Assignment-3" TARGET_NAME="COSC-4P80-Assignment-3" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="COSC-4P80-Assignment-3" RUN_TARGET_NAME="COSC-4P80-Assignment-3">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="freetype" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="COSC-4P80-Assignment-3" TARGET_NAME="freetype" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="msdfgen-core" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="COSC-4P80-Assignment-3" TARGET_NAME="msdfgen-core" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="MAKEINDEX_RUN_CONFIGURATION" factoryName="LaTeX configuration factory">
+      <texify-makeindex>
+        <program>MAKEINDEX</program>
+        <main-file />
+        <command-line-args />
+        <work-dir />
+      </texify-makeindex>
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="CMake Application.BLT_WITH_GRAPHICS" />
+      <item itemvalue="CMake Application.BLT" />
+      <item itemvalue="CMake Application.COSC-4P80-Assignment-3" />
+      <item itemvalue="CMake Application.Assign3 Tests" />
+      <item itemvalue="CMake Application.freetype" />
+      <item itemvalue="CMake Application.msdfgen-core" />
+    </list>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="df4fb81f-8c9e-43af-9712-6ff8baeb587a" name="Changes" comment="" />
+      <created>1730483030448</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1730483030448</updated>
+      <workItem from="1730483031471" duration="57000" />
+      <workItem from="1730483139508" duration="22719000" />
+      <workItem from="1730760265254" duration="6300000" />
+      <workItem from="1730932443628" duration="1866000" />
+      <workItem from="1731098529771" duration="11456000" />
+      <workItem from="1731298352794" duration="46000" />
+      <workItem from="1731298462144" duration="20154000" />
+      <workItem from="1731370094158" duration="776000" />
+      <workItem from="1731430940789" duration="18816000" />
+      <workItem from="1731607891598" duration="688000" />
+      <workItem from="1731608714255" duration="241000" />
+      <workItem from="1731609005148" duration="269000" />
+      <workItem from="1731609278663" duration="148000" />
+      <workItem from="1731609433368" duration="774000" />
+      <workItem from="1731610215063" duration="10825000" />
+      <workItem from="1731863551704" duration="24262000" />
+      <workItem from="1731963356947" duration="8884000" />
+      <workItem from="1732057317679" duration="5827000" />
+      <workItem from="1732143139954" duration="1953000" />
+      <workItem from="1732145188446" duration="1444000" />
+      <workItem from="1732146909633" duration="141000" />
+      <workItem from="1732157198289" duration="4154000" />
+      <workItem from="1732166402367" duration="1102000" />
+      <workItem from="1732168170124" duration="28000" />
+      <workItem from="1732168203130" duration="7000" />
+      <workItem from="1732168215064" duration="1000" />
+      <workItem from="1732168223857" duration="2953000" />
+      <workItem from="1732206168283" duration="1825000" />
+      <workItem from="1732215455049" duration="12944000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VCPKGProject">
+    <isAutomaticCheckingOnLaunch value="false" />
+    <isAutomaticFoundErrors value="true" />
+    <isAutomaticReloadCMake value="true" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>

@@ -25,67 +25,80 @@
 
 namespace assign3
 {
-    
     class som_t
     {
-        public:
-            som_t(const data_file_t& file, blt::size_t width, blt::size_t height, blt::size_t max_epochs, distance_function_t* dist_func,
-                  topology_function_t* topology_function, shape_t shape, init_t init, bool normalize);
-            
-            blt::size_t get_closest_neuron(const std::vector<Scalar>& data);
-            
-            Scalar find_closest_neighbour_distance(blt::size_t v0);
-            
-            void train_epoch(Scalar initial_learn_rate);
-            
-            blt::vec2 get_topological_position(const std::vector<Scalar>& data);
-            
-            Scalar topological_error();
-            
-            Scalar quantization_error();
-            
-            void compute_errors();
-            
-            void compute_neuron_activations(Scalar distance = 2, Scalar activation = 0.5);
-            
-            void write_activations(std::ostream& out);
-            
-            void write_topology_errors(std::ostream& out);
-            
-            void write_quantization_errors(std::ostream& out);
-            
-            void write_all_errors(std::ostream& out);
-            
-            [[nodiscard]] const array_t& get_array() const
-            { return array; }
-            
-            [[nodiscard]] blt::size_t get_current_epoch() const
-            { return current_epoch; }
-            
-            [[nodiscard]] blt::size_t get_max_epochs() const
-            { return max_epochs; }
-            
-            [[nodiscard]] const std::vector<Scalar>& get_topological_errors() const
-            { return topological_errors; }
-            
-            [[nodiscard]] const std::vector<Scalar>& get_quantization_errors() const
-            { return quantization_errors; }
-        
-        private:
-            array_t array;
-            data_file_t file;
-            blt::size_t current_epoch = 0;
-            blt::size_t max_epochs;
-            distance_function_t* dist_func;
-            topology_function_t* topology_function;
-            
-            // normalized value for which below this will be considered neural
-            float quantization_distance = 0.25;
-            
-            std::vector<Scalar> topological_errors;
-            std::vector<Scalar> quantization_errors;
+    public:
+        som_t(const data_file_t& file, blt::size_t width, blt::size_t height, blt::size_t max_epochs, distance_function_t* dist_func,
+              topology_function_t* topology_function, shape_t shape, init_t init, bool normalize);
+
+        som_t(const som_t&) = delete;
+        som_t& operator=(const som_t&) = delete;
+        som_t(som_t&&) = default;
+        som_t& operator=(som_t&&) = default;
+
+        blt::size_t get_closest_neuron(const std::vector<Scalar>& data);
+
+        Scalar find_closest_neighbour_distance(blt::size_t v0);
+
+        void train_epoch(Scalar initial_learn_rate);
+
+        blt::vec2 get_topological_position(const std::vector<Scalar>& data);
+
+        Scalar topological_error();
+
+        Scalar quantization_error();
+
+        void compute_errors();
+
+        void compute_neuron_activations(Scalar distance = 2, Scalar activation = 0.5);
+
+        void write_activations(std::ostream& out);
+
+        void write_topology_errors(std::ostream& out);
+
+        void write_quantization_errors(std::ostream& out);
+
+        void write_all_errors(std::ostream& out);
+
+        [[nodiscard]] const array_t& get_array() const
+        {
+            return array;
+        }
+
+        [[nodiscard]] blt::size_t get_current_epoch() const
+        {
+            return current_epoch;
+        }
+
+        [[nodiscard]] blt::size_t get_max_epochs() const
+        {
+            return max_epochs;
+        }
+
+        [[nodiscard]] const std::vector<Scalar>& get_topological_errors() const
+        {
+            return topological_errors;
+        }
+
+        [[nodiscard]] const std::vector<Scalar>& get_quantization_errors() const
+        {
+            return quantization_errors;
+        }
+
+    private:
+        array_t array;
+        data_file_t file;
+        blt::size_t current_epoch = 0;
+        blt::size_t max_epochs;
+        distance_function_t* dist_func;
+        topology_function_t* topology_function;
+
+        // normalized value for which below this will be considered neural
+        float quantization_distance = 0.25;
+
+        std::vector<Scalar> topological_errors;
+        std::vector<Scalar> quantization_errors;
     };
-    
 }
 
 #endif //COSC_4P80_ASSIGNMENT_3_SOM_H
