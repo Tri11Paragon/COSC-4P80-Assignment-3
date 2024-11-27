@@ -40,7 +40,7 @@ namespace assign3
 
         Scalar find_closest_neighbour_distance(blt::size_t v0);
 
-        void train_epoch(Scalar initial_learn_rate);
+        Scalar train_epoch(Scalar initial_learn_rate, Scalar user_scale = 1);
 
         blt::vec2 get_topological_position(const std::vector<Scalar>& data);
 
@@ -48,9 +48,9 @@ namespace assign3
 
         Scalar quantization_error();
 
-        void compute_errors();
+        Scalar compute_errors(Scalar user_scale = 1);
 
-        void compute_neuron_activations(Scalar distance = 2, Scalar activation = 0.5);
+        Scalar compute_neuron_activations(Scalar user_scale = 1, Scalar distance = 2, Scalar activation = 0.5);
 
         void write_activations(std::ostream& out);
 

@@ -64,6 +64,7 @@ void update(const blt::gfx::window_data& window_data)
 {
     using namespace blt::gfx;
     constexpr float color = 0.15;
+    // constexpr float color = 1;
     glClearColor(color, color, color, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     global_matrices.update_perspectives(window_data.width, window_data.height, 90, 0.1, 2000);
@@ -212,10 +213,24 @@ void action_test(const std::vector<std::string>& argv_vector)
                 std::vector<Scalar> average_topological_errors;
                 std::vector<Scalar> average_quantization_errors;
                 std::vector<Scalar> average_activations;
+                std::vector<Scalar> stddev_topological_errors;
+                std::vector<Scalar> stddev_quantization_errors;
+                std::vector<Scalar> min_topological_errors;
+                std::vector<Scalar> min_quantization_errors;
 
                 average_topological_errors.resize(task.topological_errors.begin()->size());
                 average_quantization_errors.resize(task.quantization_errors.begin()->size());
                 average_activations.resize(task.activations.begin()->size());
+                stddev_topological_errors.resize(task.topological_errors.begin()->size());
+                stddev_quantization_errors.resize(task.quantization_errors.begin()->size());
+
+                min_topological_errors.resize(runs);
+                min_quantization_errors.resize(runs);
+
+                for (auto [i, v] : blt::enumerate(task.topological_errors))
+                    min_topological_errors[i] = *std::min_element(v.begin(), v.end());
+                for (auto [i, v] : blt::enumerate(task.quantization_errors))
+                    min_quantization_errors[i] = *std::min_element(v.begin(), v.end());
 
                 for (const auto& vec : task.topological_errors)
                     for (auto [index, v] : blt::enumerate(vec))
@@ -227,29 +242,84 @@ void action_test(const std::vector<std::string>& argv_vector)
                     for (auto [index, v] : blt::enumerate(vec))
                         average_activations[index] += v;
 
-                auto min_quant =
-                    *std::min_element(average_quantization_errors.begin(), average_quantization_errors.end()) / static_cast<Scalar>(runs);
-                auto max_quant =
-                    *std::max_element(average_quantization_errors.begin(), average_quantization_errors.end()) / static_cast<Scalar>(runs);
+                // calculate mean per point
+                for (auto& v : average_topological_errors)
+                    v /= static_cast<Scalar>(runs);
+                for (auto& v : average_quantization_errors)
+                    v /= static_cast<Scalar>(runs);
 
-                auto min_topo = *std::min_element(average_topological_errors.begin(), average_topological_errors.end()) / static_cast<Scalar>(runs);
-                auto max_topo = *std::max_element(average_topological_errors.begin(), average_topological_errors.end()) / static_cast<Scalar>(runs);
+                for (auto [i, mean] : blt::in_pairs(average_topological_errors, average_quantization_errors).enumerate())
+                {
+                    auto [t_mean, q_mean] = mean;
+                    float variance_t = 0;
+                    float variance_q = 0;
+                    for (const auto& vec : task.topological_errors)
+                    {
+                        auto d = vec[i] - t_mean;
+                        variance_t += d * d;
+                    }
+                    for (const auto& vec : task.quantization_errors)
+                    {
+                        auto d = vec[i] - q_mean;
+                        variance_q += d * d;
+                    }
+                    variance_t /= static_cast<Scalar>(runs);
+                    variance_q /= static_cast<Scalar>(runs);
+                    stddev_topological_errors[i] = std::sqrt(variance_t);
+                    stddev_quantization_errors[i] = std::sqrt(variance_q);
+                }
+
+                Scalar avg_quantization_stddev = 0;
+                Scalar avg_topological_stddev = 0;
+
+                for (auto [q, t] : blt::in_pairs(stddev_quantization_errors, stddev_topological_errors))
+                {
+                    avg_quantization_stddev += q;
+                    avg_topological_stddev += t;
+                }
+
+                avg_quantization_stddev /= static_cast<Scalar>(task.max_epochs);
+                avg_topological_stddev /= static_cast<Scalar>(task.max_epochs);
+
+                auto min_quant =
+                    *std::min_element(average_quantization_errors.begin(), average_quantization_errors.end());
+                auto max_quant =
+                    *std::max_element(average_quantization_errors.begin(), average_quantization_errors.end());
+
+                auto min_topo = *std::min_element(average_topological_errors.begin(), average_topological_errors.end());
+                auto max_topo = *std::max_element(average_topological_errors.begin(), average_topological_errors.end());
 
                 {
                     std::ofstream topological{path + "topological_avg.csv"};
                     std::ofstream quantization{path + "quantization_avg.csv"};
                     std::ofstream activations_avg{path + "activations_avg.csv"};
                     std::ofstream activations{path + "activations.csv"};
+                    std::ofstream topological_stddev{path + "topological_stddev.csv"};
+                    std::ofstream quantization_stddev{path + "quantization_stddev.csv"};
+                    std::ofstream min_topological{path + "min_topological.csv"};
+                    std::ofstream min_quantization{path + "min_quantization.csv"};
+
+                    topological_stddev << "Average topological stddev: " << avg_topological_stddev << std::endl;
+                    quantization_stddev << "Average quantization stddev: " << avg_quantization_stddev << std::endl;
+                    min_topological << "Min Errors\n";
+                    min_quantization << "Min Errors\n";
+                    // topological_stddev << "Stddev Over Epochs: " << std::endl;
+                    // quantization_stddev << "Stddev Over Epochs: " << std::endl;
+
+                    for (auto v : stddev_topological_errors)
+                        topological_stddev << v << std::endl;
+                    for (auto v : quantization_stddev)
+                        quantization_stddev << v << std::endl;
 
                     topological << "error\n";
                     quantization << "error\n";
                     for (auto [i, v] : blt::enumerate(average_topological_errors))
                     {
-                        topological << v / static_cast<Scalar>(runs) << '\n';
+                        topological << v << '\n';
                     }
                     for (auto [i, v] : blt::enumerate(average_quantization_errors))
                     {
-                        quantization << v / static_cast<Scalar>(runs) << '\n';
+                        quantization << v << '\n';
                     }
                     for (auto [i, v] : blt::enumerate(average_activations))
                     {
@@ -324,6 +394,11 @@ int main(int argc, const char** argv)
     for (int i = 0; i < argc; i++)
         argv_vector.emplace_back(argv[i]);
 
+#ifdef __EMSCRIPTEN__
+    action_start_graphics(argv_vector);
+    return 0;
+#endif
+
     blt::arg_parse parser{};
 
     parser.addArgument(blt::arg_builder{"action"}
@@ -339,11 +414,6 @@ int main(int argc, const char** argv)
     }
 
     //    argv_vector.erase(argv_vector.begin() + 1);
-
-#ifdef __EMSCRIPTEN__
-    action_start_graphics(argv_vector);
-    return 0;
-#endif
 
     auto action = blt::string::toLowerCase(args.get<std::string>("action"));
     if (action == "graphics")

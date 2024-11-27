@@ -109,6 +109,7 @@ namespace assign3
             blt::i32 som_height = 5;
             blt::i32 max_epochs = 2000;
             Scalar initial_learn_rate = 1;
+            Scalar user_rbf_scale = 1;
             
             int currently_selected_network = 0;
             int selected_som_mode = 0;

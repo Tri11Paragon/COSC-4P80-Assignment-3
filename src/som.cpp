@@ -36,19 +36,19 @@ namespace assign3
         compute_errors();
     }
 
-    void som_t::train_epoch(Scalar initial_learn_rate)
+    Scalar som_t::train_epoch(const Scalar initial_learn_rate, const Scalar user_scale)
     {
         blt::random::random_t rand{std::random_device{}()};
         std::shuffle(file.data_points.begin(), file.data_points.end(), rand);
 
-        auto time_ratio = static_cast<Scalar>(current_epoch) / static_cast<Scalar>(max_epochs);
-        auto eta = initial_learn_rate * std::exp(-2 * time_ratio);
+        const auto time_ratio = static_cast<Scalar>(current_epoch) / static_cast<Scalar>(max_epochs);
+        const auto eta = initial_learn_rate * std::exp(-2 * time_ratio);
 
-        for (auto& current_data : file.data_points)
+        for (auto& [is_bad, bins] : file.data_points)
         {
-            const auto v0_idx = get_closest_neuron(current_data.bins);
+            const auto v0_idx = get_closest_neuron(bins);
             auto& v0 = array.get_map()[v0_idx];
-            v0.update(current_data.bins, v0.dist(current_data.bins), eta);
+            v0.update(bins, v0.dist(bins), eta);
 
             // find the closest neighbour neuron to v0
             const auto distance_min = find_closest_neighbour_distance(v0_idx);
@@ -60,12 +60,12 @@ namespace assign3
             {
                 if (i == v0_idx)
                     continue;
-                auto dist = topology_function->call(neuron_t::distance(dist_func, v0, n), time_ratio * scale);
-                n.update(current_data.bins, dist, eta);
+                const auto dist = topology_function->call(neuron_t::distance(dist_func, v0, n), time_ratio * scale);
+                n.update(bins, dist, eta);
             }
         }
         current_epoch++;
-        compute_errors();
+        return compute_errors(user_scale);
     }
 
     blt::size_t som_t::get_closest_neuron(const std::vector<Scalar>& data)
@@ -147,11 +147,11 @@ namespace assign3
         Scalar total = 0;
         std::vector<std::pair<blt::size_t, Scalar>> distances;
 
-        for (const auto& x : file.data_points)
+        for (const auto& [is_bad, bins] : file.data_points)
         {
             distances.clear();
             for (const auto& [i, n] : blt::enumerate(array.get_map()))
-                distances.emplace_back(i, n.dist(x.bins));
+                distances.emplace_back(i, n.dist(bins));
 
             std::pair<blt::size_t, Scalar> min1 = {0, std::numeric_limits<Scalar>::max()};
             std::pair<blt::size_t, Scalar> min2 = {0, std::numeric_limits<Scalar>::max()};
@@ -178,13 +178,14 @@ namespace assign3
         return total / static_cast<Scalar>(file.data_points.size());
     }
 
-    void som_t::compute_neuron_activations(Scalar distance, Scalar activation)
+    Scalar som_t::compute_neuron_activations(const Scalar user_scale, const Scalar distance, const Scalar activation)
     {
         for (auto& n : array.get_map())
             n.set_activation(0);
 
         Scalar min = std::numeric_limits<Scalar>::max();
         Scalar max = std::numeric_limits<Scalar>::min();
+        Scalar global_scale_avg = 0;
 
         for (auto [i, v] : blt::enumerate(array.get_map()))
         {
@@ -192,7 +193,8 @@ namespace assign3
             //            auto sigma = std::sqrt(-(half * half) / (2 * std::log(requested_activation)));
             //            auto r = 1 / (2 * sigma * sigma);
             //
-            const auto scale = topology_function->scale(half, activation);
+            const auto scale = user_scale * topology_function->scale(half, activation);
+            global_scale_avg+=scale;
             for (const auto& [is_bad, bins] : file.data_points)
             {
                 const auto ds = topology_function->call(v.dist(bins), scale);
@@ -206,8 +208,35 @@ namespace assign3
             max = std::max(max, v.get_activation());
         }
 
+        // for (auto [i, v] : blt::enumerate(array.get_map()))
+        // {
+        //     Scalar half = std::numeric_limits<Scalar>::max();
+        //     for (auto [j, d] : blt::enumerate(array.get_map()))
+        //     {
+        //         if (i == j)
+        //             continue;
+        //         const auto dist = d.dist(v.get_data());
+        //         if (dist < half)
+        //             half = dist;
+        //     }
+        //     const auto scale = topology_function->scale(half / distance, activation);
+        //
+        //     for (const auto& [is_bad, bins] : file.data_points)
+        //     {
+        //         const auto ds = topology_function->call(v.dist(bins), scale);
+        //         if (is_bad)
+        //             v.activate(-ds);
+        //         else
+        //             v.activate(ds);
+        //     }
+        //     min = std::min(min, v.get_activation());
+        //     max = std::max(max, v.get_activation());
+        // }
+
         for (auto& n : array.get_map())
             n.set_activation(2 * (n.get_activation() - min) / (max - min) - 1);
+
+        return global_scale_avg / static_cast<Scalar>(array.get_map().size());
     }
 
     void som_t::write_activations(std::ostream& out)
@@ -249,7 +278,7 @@ namespace assign3
         {
             const auto& nearest = array.get_map()[get_closest_neuron(point.bins)];
 
-            bool is_neural = nearest.get_activation() > -quantization_distance && nearest.get_activation() < quantization_distance;
+            const bool is_neural = nearest.get_activation() > -quantization_distance && nearest.get_activation() < quantization_distance;
 
             if (is_neural)
             {
@@ -257,8 +286,8 @@ namespace assign3
                 continue;
             }
 
-            bool is_bad = nearest.get_activation() <= -quantization_distance;
-            bool is_good = nearest.get_activation() >= quantization_distance;
+            const bool is_bad = nearest.get_activation() <= -quantization_distance;
+            const bool is_good = nearest.get_activation() >= quantization_distance;
 
             if ((is_bad && point.is_bad) || (is_good && !point.is_bad))
                 continue;
@@ -268,10 +297,11 @@ namespace assign3
         return incorrect;
     }
 
-    void som_t::compute_errors()
+    Scalar som_t::compute_errors(const Scalar user_scale)
     {
-        compute_neuron_activations();
+        const auto r = compute_neuron_activations(user_scale);
         topological_errors.push_back(topological_error());
         quantization_errors.push_back(quantization_error());
+        return r;
     }
 }

@@ -139,6 +139,8 @@ namespace assign3
         //        ImGui::ShowDemoWindow();
         //        ImPlot::ShowDemoWindow();
 
+        static Scalar returned_scale = 0;
+
         if (ImGui::Begin("Controls"))
         {
             ImGui::SetNextItemOpen(true, ImGuiCond_Appearing);
@@ -150,10 +152,7 @@ namespace assign3
                     regenerate_network();
 
                 if (ImGui::Button("Run Epoch"))
-                {
-                    som->train_epoch(initial_learn_rate);
-                    som->compute_neuron_activations();
-                }
+                    returned_scale = som->train_epoch(initial_learn_rate, user_rbf_scale);
                 if (ImGui::Button("Save"))
                 {
                     auto text = std::to_string(blt::system::getCurrentTimeMilliseconds()) + "-activations.csv";
@@ -169,7 +168,9 @@ namespace assign3
                                 stream << ',';
                         }
                     }
-                    plot_heatmap(text, motor_data.files[currently_selected_network].data_points.front().bins.size(), "");
+                    auto sub = std::to_string(som_width) + "x" + std::to_string(som_height) + " " += shape_names[selected_som_mode] + ", " +=
+                             init_names[selected_init_type] + ", " + std::to_string(max_epochs) + " Epochs";
+                    plot_heatmap(text, motor_data.files[currently_selected_network].data_points.front().bins.size(), sub);
                 }
                 ImGui::Checkbox("Run to completion", &running);
                 ImGui::Text("Epoch %ld / %ld", som->get_current_epoch(), som->get_max_epochs());
@@ -193,6 +194,10 @@ namespace assign3
                     regenerate_network();
                 if (ImGui::InputFloat("Initial Learn Rate", &initial_learn_rate))
                     regenerate_network();
+                ImGui::SeparatorText("Activation Config");
+                if (ImGui::InputFloat("Network Activation RBF Scale", &user_rbf_scale))
+                    returned_scale = som->compute_neuron_activations(user_rbf_scale);
+                ImGui::Text("Average Scale: %f", returned_scale);
             }
             if (ImGui::CollapsingHeader("Debug"))
             {
@@ -272,7 +277,7 @@ namespace assign3
         if (running)
         {
             if (som->get_current_epoch() < som->get_max_epochs())
-                som->train_epoch(initial_learn_rate);
+                returned_scale = som->train_epoch(initial_learn_rate, user_rbf_scale);
         }
 
 

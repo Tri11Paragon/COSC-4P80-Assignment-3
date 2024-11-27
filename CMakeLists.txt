@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-project(COSC-4P80-Assignment-3 VERSION 0.0.30)
+project(COSC-4P80-Assignment-3 VERSION 0.0.31)
 include(FetchContent)
 
 option(ENABLE_ADDRSAN "Enable the address sanitizer" OFF)

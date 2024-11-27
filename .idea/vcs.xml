@@ -2,6 +2,8 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/build/_deps/freetype-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/build/_deps/implot-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/cmake-build-debug-addrsan/_deps/freetype-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/cmake-build-debug-addrsan/_deps/freetype-src/subprojects/dlg" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/cmake-build-debug-addrsan/_deps/imgui-src" vcs="Git" />
@@ -21,6 +23,10 @@
     <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/msdfgen-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/openal-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/openal_git-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-emscript/_deps/freetype-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-emscript/_deps/freetype-src/subprojects/dlg" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-emscript/_deps/imgui-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-emscript/_deps/implot-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/cmake-build-release/_deps/freetype-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/cmake-build-release/_deps/freetype-src/subprojects/dlg" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/cmake-build-release/_deps/freetype_git-src" vcs="Git" />
