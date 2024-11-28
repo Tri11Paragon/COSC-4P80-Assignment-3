@@ -53,7 +53,7 @@ else:
     plt.ylim(0, 1)
     
     plt.suptitle("Topological Error (Bins: {})".format(bins), fontsize=16)
-    plt.title(subtitle1, fontsize=11)
+    plt.title(subtitle1, fontsize=10)
 
     plt.savefig("errors-topological{}.png".format(bins))
     
@@ -64,7 +64,7 @@ else:
     plt.ylim(y_min, y_max)
     
     plt.suptitle("Quantization Error (Bins: {})".format(bins), fontsize=16)
-    plt.title(subtitle2, fontsize=11)
+    plt.title(subtitle2, fontsize=10)
 
     plt.savefig("errors-quantization{}.png".format(bins))
 

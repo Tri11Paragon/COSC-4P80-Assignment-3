@@ -48,7 +48,7 @@ namespace assign3
         {
             const auto v0_idx = get_closest_neuron(bins);
             auto& v0 = array.get_map()[v0_idx];
-            v0.update(bins, v0.dist(bins), eta);
+            // v0.update(bins, v0.dist(bins), eta);
 
             // find the closest neighbour neuron to v0
             const auto distance_min = find_closest_neighbour_distance(v0_idx);

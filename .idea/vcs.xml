@@ -3,6 +3,7 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/build/_deps/freetype-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/build/_deps/freetype-src/subprojects/dlg" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/build/_deps/implot-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/cmake-build-debug-addrsan/_deps/freetype-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/cmake-build-debug-addrsan/_deps/freetype-src/subprojects/dlg" vcs="Git" />
