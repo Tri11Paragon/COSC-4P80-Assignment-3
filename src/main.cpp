@@ -453,7 +453,7 @@ void action_test(const std::vector<std::string>& argv_vector)
                                 ", " + std::to_string(task.max_epochs) + " Epochs",
                                 std::to_string(task.width) + "x" + std::to_string(task.height) + " " += shape_name + ", " += init_name + ", Min: " +
                                 std::to_string(min_quant) + ", Max: " +
-                                std::to_string(max_quant) +", " + std::to_string(task.max_epochs) +
+                                std::to_string(max_quant) + ", " + std::to_string(task.max_epochs) +
                                 " Epochs");
 
                 BLT_INFO("Task '%s' Complete", path.c_str());
@@ -568,20 +568,29 @@ void action_convert(const std::vector<std::string>& argv_vector)
     std::vector<test_t> tasks;
     std::mutex task_mutex;
 
+    // for (auto& file : data.files)
+    // {
+    //     for (blt::u32 i = 5; i <= 7; i++)
+    //     {
+    //         for (blt::i32 shape = 0; shape < 4; shape++)
+    //         {
+    //             auto shape_v = static_cast<shape_t>(shape);
+    //             tasks.emplace_back(std::vector{
+    //                                    task_t{&file, i, i, 2000, shape_v, init_t::COMPLETELY_RANDOM, 1.0},
+    //                                    task_t{&file, i, i, 2000, shape_v, init_t::RANDOM_DATA, 1.0},
+    //                                    task_t{&file, i, i, 2000, shape_v, init_t::SAMPLED_DATA, 1.0}
+    //                                }, "UnUsed");
+    //         }
+    //     }
+    // }
+
     for (auto& file : data.files)
     {
-        for (blt::u32 i = 5; i <= 7; i++)
-        {
-            for (blt::i32 shape = 0; shape < 4; shape++)
-            {
-                auto shape_v = static_cast<shape_t>(shape);
-                tasks.emplace_back(std::vector{
-                                       task_t{&file, i, i, 2000, shape_v, init_t::COMPLETELY_RANDOM, 1.0},
-                                       task_t{&file, i, i, 2000, shape_v, init_t::RANDOM_DATA, 1.0},
-                                       task_t{&file, i, i, 2000, shape_v, init_t::SAMPLED_DATA, 1.0}
-                                   }, "UnUsed");
-            }
-        }
+        tasks.emplace_back(std::vector{
+                               task_t{&file, 5, 5, 2000, shape_t::GRID_WRAP, init_t::COMPLETELY_RANDOM, 1.0},
+                               task_t{&file, 6, 6, 2000, shape_t::GRID_WRAP, init_t::COMPLETELY_RANDOM, 1.0},
+                               task_t{&file, 7, 7, 2000, shape_t::GRID_WRAP, init_t::COMPLETELY_RANDOM, 1.0}
+                           }, "UnUsed");
     }
 
     for (blt::size_t i = 0; i < std::thread::hardware_concurrency(); i++)
@@ -648,13 +657,18 @@ void action_convert(const std::vector<std::string>& argv_vector)
 
                 std::ofstream stats{filtered_path + "results_table.txt"};
                 stats << "\\begin{figure}[h!]\n\t\\centering" << std::endl;
-                stats << "\t\\makebox[\\textwidth]{\\begin{tabular}{ccc}" << std::endl << "\t\t";
+                stats << "\t\\makebox[\\textwidth]{\\begin{tabular}{cc}" << std::endl << "\t\t";
 
                 for (auto [i, task] : blt::enumerate(t.tasks))
                 {
                     if (i != 0)
-                        stats << " & \n\t\t";
-                    stats << "\\includegraphics[width=0.4\\textwidth]{" << make_path(task) + "errors-topological" << bin_size << "}";
+                    {
+                        if (i % 2 == 0)
+                            stats << "\\\\" << std::endl << "\t\t";
+                        else
+                            stats << " & \n\t\t";
+                    }
+                    stats << "\\includegraphics[width=0.6\\textwidth]{" << make_path(task) + "errors-topological" << bin_size << "}";
                 }
                 stats << "\\\\" << std::endl;
                 stats << "\t\\end{tabular}}" << std::endl;
@@ -662,20 +676,30 @@ void action_convert(const std::vector<std::string>& argv_vector)
                 stats << "\\end{figure}" << std::endl << std::endl;
 
                 stats << "\\begin{figure}[h!]\n\t\\centering" << std::endl;
-                stats << "\t\\makebox[\\textwidth]{\\begin{tabular}{ccc}" << std::endl << "\t\t";
+                stats << "\t\\makebox[\\textwidth]{\\begin{tabular}{cc}" << std::endl << "\t\t";
 
                 for (auto [i, task] : blt::enumerate(t.tasks))
                 {
                     if (i != 0)
-                        stats << " & \n\t\t";
-                    stats << "\\includegraphics[width=0.4\\textwidth]{" << make_path(task) + "errors-topological" << bin_size << "}";
+                    {
+                        if (i % 2 == 0)
+                            stats << "\\\\" << std::endl << "\t\t";
+                        else
+                            stats << " & \n\t\t";
+                    }
+                    stats << "\\includegraphics[width=0.6\\textwidth]{" << make_path(task) + "errors-topological" << bin_size << "}";
                 }
                 stats << "\\\\" << std::endl << "\t\t";
                 for (auto [i, task] : blt::enumerate(t.tasks))
                 {
                     if (i != 0)
-                        stats << " & \n\t\t";
-                    stats << "\\includegraphics[width=0.4\\textwidth]{" << make_path(task) + "errors-quantization" << bin_size << "}";
+                    {
+                        if (i % 2 == 0)
+                            stats << "\\\\" << std::endl << "\t\t";
+                        else
+                            stats << " & \n\t\t";
+                    }
+                    stats << "\\includegraphics[width=0.6\\textwidth]{" << make_path(task) + "errors-quantization" << bin_size << "}";
                 }
                 stats << "\\\\" << std::endl;
                 stats << "\t\\end{tabular}}" << std::endl;

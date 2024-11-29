@@ -190,9 +190,6 @@ namespace assign3
         for (auto [i, v] : blt::enumerate(array.get_map()))
         {
             const auto half = find_closest_neighbour_distance(i) / distance;
-            //            auto sigma = std::sqrt(-(half * half) / (2 * std::log(requested_activation)));
-            //            auto r = 1 / (2 * sigma * sigma);
-            //
             const auto scale = user_scale * topology_function->scale(half, activation);
             global_scale_avg+=scale;
             for (const auto& [is_bad, bins] : file.data_points)
