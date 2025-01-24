@@ -23,7 +23,7 @@ void plot_heatmap(const std::string& path, const std::string& activations_csv, c
     const std::string command = "cd '" + path + "' && python3 '" + pwd + "../plot_heatmap.py' '" + activations_csv + "' '" + std::to_string(bin_size)
         +
         "' '" + subtitle + "'";
-    BLT_TRACE(command);
+    BLT_TRACE(command);g
     std::system(command.c_str());
 #endif
 }
@@ -50,6 +50,8 @@ blt::gfx::first_person_camera_2d camera;
 assign3::motor_data_t data{};
 assign3::renderer_t renderer{data, resources, global_matrices};
 
+bool silly = false;
+
 void init(const blt::gfx::window_data&)
 {
     using namespace blt::gfx;
@@ -61,6 +63,8 @@ void init(const blt::gfx::window_data&)
 
     ImPlot::CreateContext();
 }
+
+#define as_float(x) static_cast<float>(x)
 
 void update(const blt::gfx::window_data& window_data)
 {
@@ -75,7 +79,41 @@ void update(const blt::gfx::window_data& window_data)
     camera.update_view(global_matrices);
     global_matrices.update();
 
-    renderer.render();
+    if (silly)
+    {
+        auto& rend = renderer.get_renderer();
+
+        std::vector<std::pair<float, float>> points;
+
+        float window_width = as_float(window_data.width);
+        float window_height = as_float(window_data.height);
+
+        constexpr int num_of_points = 1000;
+        constexpr float min = -10;
+        constexpr float max = 10;
+
+        constexpr float distance = max - min;
+        constexpr float step = distance / as_float(num_of_points);
+        for (int i = 0; i < num_of_points; i++)
+        {
+            const float x_value = min + step * as_float(i);
+            const float y_value = std::sin(x_value);
+
+            // scales the x range of the function down to 1...1, then blows it up to -window_width/2...window_width/2, then centers it to the window
+            const float scaled_x = ((x_value / (distance / 2)) * (window_width / 2)) + (window_width / 2);
+            // similar to x, except y values are already between -1 and 1
+            const float scaled_y = (y_value * (window_height / 2)) + (window_height / 2);
+
+            points.emplace_back(scaled_x, scaled_y);
+        }
+        for (const auto& [i, point] : blt::enumerate(points).rev().skip(1).rev())
+        {
+            rend.drawLineInternal(blt::make_color(1, 0, 0), {point.first, point.second, points[i+1].first, points[i+1].second});
+        }
+
+        renderer.draw_calls();
+    } else
+        renderer.render();
 }
 
 void destroy(const blt::gfx::window_data&)
@@ -105,9 +143,13 @@ void action_start_graphics(const std::vector<std::string>& argv_vector)
                        .setDefault("../data")
                        .setHelp("Path to data files").build());
 
+    parser.addArgument(blt::arg_builder{"--silly"}.setAction(blt::arg_action_t::STORE_TRUE).setDefault(false).build());
+
     auto args = parser.parse_args(argv_vector);
 
     load_data_files(args.get<std::string>("file"));
+
+    silly = args.get<bool>("silly");
 
     blt::gfx::init(blt::gfx::window_data{"My Sexy Window", init, update, destroy}.setSyncInterval(1).setMaximized(true));
 }
@@ -760,7 +802,10 @@ int main(int argc, const char** argv)
                        .setAction(blt::arg_action_t::SUBCOMMAND)
                        .setHelp("Action to run. Can be: [graphics, test, convert]").build());
 
-    auto args = parser.parse_args(argv_vector);
+    auto copy = argv_vector;
+    copy.erase(copy.begin() + 2, copy.end());
+
+    auto args = parser.parse_args(copy);
 
     if (!args.contains("action"))
     {

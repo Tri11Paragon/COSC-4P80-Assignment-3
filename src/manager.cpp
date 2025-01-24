@@ -293,6 +293,11 @@ namespace assign3
         else
             draw_debug(current_data_file);
 
+        draw_calls();
+    }
+
+    void renderer_t::draw_calls()
+    {
         br2d.render(0, 0);
         fr2d.render();
     }

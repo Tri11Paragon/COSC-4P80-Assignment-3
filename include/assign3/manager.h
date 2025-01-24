@@ -87,6 +87,8 @@ namespace assign3
             void draw_debug(const data_file_t& file);
             
             void render();
+
+            void draw_calls();
             
             void regenerate_network()
             {
@@ -94,6 +96,11 @@ namespace assign3
                 som = std::make_unique<som_t>(motor_data.files[currently_selected_network], som_width, som_height, max_epochs,
                                               distance_function.get(), topology_function.get(), static_cast<shape_t>(selected_som_mode),
                                               static_cast<init_t>(selected_init_type), normalize_init);
+            }
+
+            blt::gfx::batch_renderer_2d& get_renderer()
+            {
+                return br2d;
             }
         
         private:
