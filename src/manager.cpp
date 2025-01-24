@@ -141,6 +141,7 @@ namespace assign3
 
         static Scalar returned_scale = 0;
 
+        ImGui::SetNextWindowPos(ImVec2{25, 25}, ImGuiCond_Appearing);
         if (ImGui::Begin("Controls"))
         {
             ImGui::SetNextItemOpen(true, ImGuiCond_Appearing);
@@ -243,6 +244,8 @@ namespace assign3
 
         auto current_data_file = motor_data.files[currently_selected_network];
 
+        ImGui::SetNextWindowSize({250, 0}, ImGuiCond_Appearing);
+        ImGui::SetNextWindowPos(ImVec2{static_cast<float>(getWindowWidth() - 275), 25}, ImGuiCond_Appearing);
         if (ImGui::Begin("Plots & Data"))
         {
             ImPlot::SetNextAxesLimits(0, som_width, 0, som_height, ImPlotCond_Always);

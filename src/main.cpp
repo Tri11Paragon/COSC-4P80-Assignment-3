@@ -23,7 +23,6 @@ void plot_heatmap(const std::string& path, const std::string& activations_csv, c
     const std::string command = "cd '" + path + "' && python3 '" + pwd + "../plot_heatmap.py' '" + activations_csv + "' '" + std::to_string(bin_size)
         +
         "' '" + subtitle + "'";
-    BLT_TRACE(command);
     std::system(command.c_str());
 #endif
 }
